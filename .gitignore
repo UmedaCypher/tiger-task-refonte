@@ -1,8 +1,9 @@
-node_modules/
-build/
-dist/
-coverage/
-.DS_Store
+node_modules
+dist
+dev-dist
+.env
+.env.local
+.dev.vars
+.wrangler
 *.log
-.env*
-!.env.example
+.DS_Store

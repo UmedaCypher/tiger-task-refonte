@@ -1,6 +1,0 @@
-{
-  "name": "Tiger Task",
-  "description": "Une version moderne et collaborative de la méthode de planification temporelle de Fibre Tigre, mêlant Bento UI et glassmorphisme.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
