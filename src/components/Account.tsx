@@ -2,18 +2,17 @@ import { useEffect, useState } from 'react';
 import { clearExamples, exportJSON } from '../lib/store';
 import { callApi, signInWithEmail, signInWithGoogle, signOut, supabase, SYNC_REQUIRES_PREMIUM, useAuth } from '../lib/supabase';
 import { syncNow, useSyncStatus } from '../lib/sync';
-import { TigerMark } from './TigerMark';
 
 /** Prix affichés — à aligner avec les prix créés dans Stripe */
 const PRICES = { monthly: '3 € / mois', yearly: '24 € / an' };
 
 const SYNC_LABEL: Record<string, string> = {
-  off: 'Carnet local uniquement',
-  locked: 'Synchronisation réservée au Pacte',
-  idle: 'Carnet synchronisé',
+  off: 'Données sur cet appareil uniquement',
+  locked: 'Synchronisation réservée aux abonnés',
+  idle: 'Synchronisé',
   syncing: 'Synchronisation…',
-  error: 'Erreur de synchronisation',
-  offline: 'Hors ligne — les tâches partiront au retour du réseau',
+  error: 'Synchronisation impossible pour l’instant',
+  offline: 'Hors ligne. Tout partira au retour du réseau.',
 };
 
 export function Account() {
@@ -36,50 +35,32 @@ export function Account() {
       setBusy(false);
     }
   };
-
-  const checkout = (plan: 'monthly' | 'yearly') =>
+  const go = (path: string, body: unknown) =>
     run(async () => {
-      const { url } = await callApi<{ url: string }>('/api/checkout', { plan });
-      window.location.href = url;
-    });
-
-  const portal = () =>
-    run(async () => {
-      const { url } = await callApi<{ url: string }>('/api/portal', {});
+      const { url } = await callApi<{ url: string }>(path, body);
       window.location.href = url;
     });
 
   const download = () => {
-    const blob = new Blob([exportJSON()], { type: 'application/json' });
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
+    a.href = URL.createObjectURL(new Blob([exportJSON()], { type: 'application/json' }));
     a.download = `tiger-task-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
   };
 
   return (
-    <section className="account">
-      <header className="page-head">
-        <p className="eyebrow">Le gardien du carnet</p>
-        <h1 className="page-title">Compte</h1>
-      </header>
-
-      {/* ---------------- Connexion ---------------- */}
-      <div className="card">
-        {!supabase && (
-          <p className="muted">
-            Ton carnet vit sur cet appareil, et fonctionne hors ligne. La connexion apparaîtra dès que Supabase sera configuré.
-          </p>
-        )}
+    <div className="stack">
+      <section className="group">
+        {!supabase && <p className="muted">Tes tâches sont enregistrées sur cet appareil et fonctionnent hors ligne.</p>}
         {supabase && ready && !session && (
           <>
-            <h2 className="card-title">Emporter le carnet partout</h2>
-            <p className="muted">Connecte-toi pour retrouver tes journées sur tous tes appareils. Ce qui est déjà écrit ici sera conservé.</p>
+            <h3>Retrouver tes tâches partout</h3>
+            <p className="muted">Connecte-toi pour synchroniser tes appareils. Ce qui est déjà ici est conservé.</p>
             {sent ? (
-              <p className="success">Un lien t’attend dans ta boîte mail. Ouvre-le sur cet appareil.</p>
+              <p className="ok">Lien envoyé. Ouvre-le sur cet appareil.</p>
             ) : (
               <form
-                className="login"
+                className="stack tight"
                 onSubmit={(e) => {
                   e.preventDefault();
                   run(async () => {
@@ -88,95 +69,84 @@ export function Account() {
                   });
                 }}
               >
-                <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ton@email.fr" />
-                <button className="gold-btn" disabled={busy}>
-                  Recevoir un lien
+                <input className="field" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="nom@email.fr" aria-label="Email" />
+                <button className="btn primary" disabled={busy}>
+                  Recevoir un lien de connexion
                 </button>
               </form>
             )}
-            <button className="ghost" onClick={() => run(signInWithGoogle)}>
+            <button className="btn" onClick={() => run(signInWithGoogle)}>
               Continuer avec Google
             </button>
           </>
         )}
         {session && (
           <>
-            <p className="who">
-              <span className="muted">Connecté·e en tant que</span> {session.user.email}
-            </p>
-            <p className={`sync sync-${sync}`}>
-              <span className="dot" /> {SYNC_LABEL[sync]}
+            <p>{session.user.email}</p>
+            <p className={`sync is-${sync}`}>
+              <i /> {SYNC_LABEL[sync]}
               {(sync === 'idle' || sync === 'error') && (
                 <button className="link" onClick={() => syncNow()}>
-                  synchroniser
+                  Synchroniser
                 </button>
               )}
             </p>
-            <button className="ghost" onClick={() => signOut()}>
+            <button className="btn ghost" onClick={() => signOut()}>
               Se déconnecter
             </button>
           </>
         )}
-      </div>
+      </section>
 
-      {/* ---------------- Premium ---------------- */}
-      <div className={`card pact ${profile?.is_premium ? 'is-sealed' : ''}`}>
-        <TigerMark size={56} />
-        <h2 className="card-title">Le Pacte du Tigre</h2>
+      <section className="group">
+        <h3>Abonnement</h3>
         {profile?.is_premium ? (
           <>
-            <p className="pact-verse">Le pacte est scellé. Merci de faire vivre le carnet.</p>
-            <button className="ghost" onClick={portal} disabled={busy}>
-              Gérer mon abonnement
+            <p className="ok">Abonnement actif. Merci de soutenir Tiger Task.</p>
+            <button className="btn" onClick={() => go('/api/portal', {})} disabled={busy}>
+              Gérer l’abonnement
             </button>
           </>
         ) : (
           <>
-            <p className="pact-verse">Pour celles et ceux qui tiennent leur carnet chaque jour.</p>
-            <ul className="pact-list">
+            <ul className="bullets">
               {SYNC_REQUIRES_PREMIUM && <li>Synchronisation sur tous tes appareils</li>}
-              <li>Les widgets d’écran d’accueil, dès leur sortie</li>
-              <li>Le soutien d’une app indépendante, sans publicité</li>
+              <li>Widgets d’écran d’accueil, dès leur sortie</li>
+              <li>Une app indépendante, sans publicité</li>
             </ul>
             {session ? (
-              <div className="pact-offers">
-                <button className="gold-btn" onClick={() => checkout('yearly')} disabled={busy}>
-                  Sceller pour un an · {PRICES.yearly}
+              <div className="stack tight">
+                <button className="btn primary" onClick={() => go('/api/checkout', { plan: 'yearly' })} disabled={busy}>
+                  S’abonner · {PRICES.yearly}
                 </button>
-                <button className="ghost" onClick={() => checkout('monthly')} disabled={busy}>
+                <button className="btn" onClick={() => go('/api/checkout', { plan: 'monthly' })} disabled={busy}>
                   Au mois · {PRICES.monthly}
                 </button>
               </div>
             ) : (
-              <p className="muted small">Connecte-toi pour sceller le pacte.</p>
+              <p className="muted">Connecte-toi pour t’abonner.</p>
             )}
           </>
         )}
-      </div>
+      </section>
 
-      {err && <p className="error">{err}</p>}
+      {err && <p className="err">{err}</p>}
 
-      {/* ---------------- Carnet ---------------- */}
-      <div className="card">
-        <h2 className="card-title">Le carnet</h2>
+      <section className="group">
+        <h3>Données</h3>
         {install && (
-          <button className="ghost" onClick={install}>
-            Installer Tiger Task sur cet appareil
+          <button className="btn" onClick={install}>
+            Installer l’app
           </button>
         )}
-        <button className="ghost" onClick={download}>
-          Exporter tout le carnet (JSON)
+        <button className="btn" onClick={download}>
+          Exporter en JSON
         </button>
-        <button className="ghost" onClick={clearExamples}>
+        <button className="btn ghost" onClick={clearExamples}>
           Effacer les tâches d’exemple
         </button>
-      </div>
-
-      <p className="footnote">
-        Tiger Task s’inspire de la méthode d’organisation que Fibre Tigre a décrite dans ses billets annuels : une liste par jour, une
-        couleur par tâche, et une année entière à regarder en face.
-      </p>
-    </section>
+      </section>
+    </div>
   );
 }
 
