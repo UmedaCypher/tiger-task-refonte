@@ -2,13 +2,13 @@
    Blanc, gris, quadrillage fin, vert. Verre dépoli pour ce qui flotte. */
 
 :root {
-  --bg: #f4f5f4;
+  --bg: #f3f2f7;
   --paper: #ffffff;
   --line: #e4e6e4;
   --line-strong: #c9ccc9;
-  --ink: #1c1c1e;
-  --ink-2: #5d615e;
-  --ink-3: #6f7470;
+  --ink: #1f2330;
+  --ink-2: #454b5a;
+  --ink-3: #6a7080;
   --weekend: #fafbfa;
   --green: #138a52;
   --green-ink: #0d6b3f;
@@ -214,19 +214,19 @@ button:disabled {
 
 /* ------------------------------------------------------------ sheet --- */
 
-main {
+[data-excel='on'] main {
   padding-bottom: calc(env(safe-area-inset-bottom) + 48px);
 }
-.sheet {
+[data-excel='on'] .sheet {
   background: var(--paper);
   border-bottom: 1px solid var(--line);
 }
 
-.month {
+[data-excel='on'] .month {
   content-visibility: auto;
   contain-intrinsic-size: auto 1400px;
 }
-.month-row {
+[data-excel='on'] .month-row {
   height: 36px;
   display: flex;
   align-items: flex-end;
@@ -234,14 +234,14 @@ main {
   background: var(--bg);
   border-bottom: 1px solid var(--line-strong);
 }
-.month-name {
+[data-excel='on'] .month-name {
   font-size: 13px;
   font-weight: 600;
   text-transform: capitalize;
   color: var(--ink-2);
 }
 
-.row {
+[data-excel='on'] .row {
   display: grid;
   grid-template-columns: var(--rownum-w) var(--date-w) minmax(0, 1fr);
   min-height: var(--row-h);
@@ -249,14 +249,14 @@ main {
   cursor: pointer;
   transition: background 0.15s;
 }
-.row:not(.is-open):hover {
+[data-excel='on'] .row:not(.is-open):hover {
   background: #f7f8f7;
 }
-.row.is-weekend:not(.is-open):not(.is-today) {
+[data-excel='on'] .row.is-weekend:not(.is-open):not(.is-today) {
   background: var(--weekend);
 }
 
-.rownum {
+[data-excel='on'] .rownum {
   display: grid;
   place-items: center;
   font-size: 11px;
@@ -265,7 +265,7 @@ main {
   background: var(--bg);
   border-right: 1px solid var(--line);
 }
-.date {
+[data-excel='on'] .date {
   position: relative;
   display: flex;
   align-items: center;
@@ -274,16 +274,16 @@ main {
   border-right: 1px solid var(--line-strong);
   font-variant-numeric: tabular-nums;
 }
-.date-wd {
+[data-excel='on'] .date-wd {
   width: 26px;
   font-size: 12px;
   color: var(--ink-3);
 }
-.date-num {
+[data-excel='on'] .date-num {
   font-size: 15px;
   font-weight: 500;
 }
-.pending {
+[data-excel='on'] .pending {
   position: absolute;
   top: 8px;
   right: 8px;
@@ -293,27 +293,27 @@ main {
   background: #e0a200;
 }
 @media (max-width: 639px) {
-  .date {
+  [data-excel='on'] .date {
     flex-direction: column;
     justify-content: center;
     align-items: flex-start;
     gap: 0;
     padding: 0 8px;
   }
-  .date-wd {
+  [data-excel='on'] .date-wd {
     font-size: 11px;
     line-height: 1.1;
   }
 }
 
-.cells {
+[data-excel='on'] .cells {
   display: grid;
   grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
   min-width: 0;
 }
 
 /* cellule = une tâche, remplie de sa couleur comme dans un tableur */
-.cell {
+[data-excel='on'] .cell {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -324,7 +324,7 @@ main {
   background: var(--fill, transparent);
   color: var(--ink);
 }
-.cell-text {
+[data-excel='on'] .cell-text {
   flex: 1;
   min-width: 0;
   text-align: left;
@@ -335,12 +335,11 @@ main {
   padding: 12px 0;
   cursor: inherit;
 }
-.cell.is-red .cell-text,
-.cell.is-black .cell-text {
+[data-excel='on'] .cell.is-red .cell-text, [data-excel='on'] .cell.is-black .cell-text {
   text-decoration: line-through;
   text-decoration-thickness: 1px;
 }
-.mark {
+[data-excel='on'] .mark {
   flex: none;
   display: grid;
   place-items: center;
@@ -350,20 +349,20 @@ main {
   border-radius: 8px;
   color: var(--ink-3);
 }
-.mark.is-static {
+[data-excel='on'] .mark.is-static {
   width: 16px;
   margin-left: 0;
 }
-.mark:not(.is-static):hover {
+[data-excel='on'] .mark:not(.is-static):hover {
   background: rgba(28, 28, 30, 0.06);
 }
-.carry {
+[data-excel='on'] .carry {
   flex: none;
   font-size: 11px;
   font-variant-numeric: tabular-nums;
   opacity: 0.75;
 }
-.cell.is-changed {
+[data-excel='on'] .cell.is-changed {
   animation: fillIn 0.45s var(--ease);
 }
 @keyframes fillIn {
@@ -372,44 +371,43 @@ main {
   }
 }
 
-.cell.is-more {
+[data-excel='on'] .cell.is-more {
   gap: 8px;
   color: var(--ink-2);
   font-size: 13px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
-.more-dots {
+[data-excel='on'] .more-dots {
   display: flex;
   flex-wrap: wrap;
   gap: 3px;
   max-width: 70%;
 }
-.more-dots i {
+[data-excel='on'] .more-dots i {
   width: 8px;
   height: 8px;
   border-radius: 2.5px;
 }
-.more-dots i.is-white {
+[data-excel='on'] .more-dots i.is-white {
   box-shadow: inset 0 0 0 1px var(--line-strong);
 }
 
 /* ------------------------------------------------- ligne du jour/ouverte */
 
-.row.is-today {
+[data-excel='on'] .row.is-today {
   background: var(--green-tint);
 }
-.row.is-today .date-num,
-.row.is-today .date-wd {
+[data-excel='on'] .row.is-today .date-num, [data-excel='on'] .row.is-today .date-wd {
   color: var(--green-ink);
 }
-.row.is-today .rownum {
+[data-excel='on'] .row.is-today .rownum {
   background: var(--green);
   color: #fff;
   font-weight: 600;
 }
 
-.row.is-open {
+[data-excel='on'] .row.is-open {
   cursor: default;
   position: relative;
   z-index: 1;
@@ -418,15 +416,15 @@ main {
     0 0 0 1.5px var(--ink),
     0 10px 30px -12px rgba(28, 28, 30, 0.28);
 }
-.row.is-open.is-today {
+[data-excel='on'] .row.is-open.is-today {
   box-shadow:
     0 0 0 1.5px var(--green),
     0 10px 30px -12px rgba(19, 138, 82, 0.35);
 }
-.row.is-open .cells {
+[data-excel='on'] .row.is-open .cells {
   grid-auto-rows: minmax(var(--row-h), auto);
 }
-.row.is-open .cell-text {
+[data-excel='on'] .row.is-open .cell-text {
   white-space: normal;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -435,16 +433,16 @@ main {
   padding: 0;
   margin: 10px 0;
 }
-.row.is-open .cell {
+[data-excel='on'] .row.is-open .cell {
   border-bottom: 1px solid var(--line);
   animation: cellIn 0.3s var(--ease) backwards;
 }
-.row.is-open .date {
+[data-excel='on'] .row.is-open .date {
   align-items: flex-start;
   padding-top: 13px;
 }
 @media (max-width: 639px) {
-  .row.is-open .date {
+  [data-excel='on'] .row.is-open .date {
     justify-content: flex-start;
     padding-top: 8px;
   }
@@ -455,10 +453,10 @@ main {
   }
 }
 
-.cell.is-add {
+[data-excel='on'] .cell.is-add {
   color: var(--ink-3);
 }
-.cell.is-add input {
+[data-excel='on'] .cell.is-add input {
   flex: 1;
   min-width: 0;
   height: 100%;
@@ -468,10 +466,10 @@ main {
   font-size: 14px;
   color: var(--ink);
 }
-.cell.is-add input::placeholder {
+[data-excel='on'] .cell.is-add input::placeholder {
   color: var(--ink-3);
 }
-.cell.is-add:focus-within {
+[data-excel='on'] .cell.is-add:focus-within {
   box-shadow: inset 0 0 0 2px var(--green);
 }
 
@@ -592,14 +590,14 @@ main {
   font-size: 11px;
   color: var(--ink-3);
 }
-.chip {
+.swatch-chip {
   display: inline-block;
   width: 14px;
   height: 14px;
   border-radius: 4px;
   flex: none;
 }
-.chip.is-white {
+.swatch-chip.is-white {
   box-shadow: inset 0 0 0 1.3px var(--line-strong);
 }
 .menu-delete {
@@ -933,4 +931,488 @@ main {
     animation: none !important;
     transition: none !important;
   }
+}
+
+/* =========================================================== FOCALE ===
+   Le jour ouvert est une lentille de verre dans un halo de lumière ;
+   les autres jours se floutent en s'éloignant du centre de l'écran. */
+
+main {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 48px);
+}
+.month {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 1400px;
+}
+
+:root {
+  --bg: #f3f2f7;
+  --ink: #1f2330;
+  --ink-2: #454b5a;
+  --ink-3: #6a7080;
+  --line: rgba(40, 45, 60, 0.08);
+  --halo: radial-gradient(ellipse at 50% 50%, rgba(255, 232, 196, 0.95), rgba(214, 225, 255, 0.55) 45%, rgba(243, 242, 247, 0) 72%);
+  --lens-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.64));
+  --lens-edge: rgba(255, 255, 255, 0.95);
+  --lens-shadow: 0 30px 60px -24px rgba(60, 70, 110, 0.35), 0 0 0 1px rgba(60, 70, 110, 0.05);
+  background: var(--bg);
+}
+.shell::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(60% 40% at 100% 0%, rgba(214, 225, 255, 0.7), transparent 70%),
+    radial-gradient(50% 40% at 0% 100%, rgba(255, 228, 214, 0.6), transparent 70%),
+    var(--bg);
+}
+
+[data-excel='off'] .chrome {
+  border-bottom: 1px solid var(--line);
+}
+.toggle {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 15px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-2);
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.4);
+  margin-right: 2px;
+  transition: background 0.2s, color 0.2s;
+}
+.toggle.is-on {
+  background: var(--green);
+  border-color: var(--green);
+  color: #fff;
+}
+
+[data-excel='off'] .sheet {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 4px 0 120px;
+}
+[data-excel='off'] .month-row {
+  padding: 30px 22px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+[data-excel='off'] .row:not(.lens) {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 50px;
+  padding: 0 22px;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+[data-excel='off'] .row:not(.lens):hover {
+  background: rgba(127, 127, 160, 0.06);
+}
+[data-excel='off'] .row:not(.lens):focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: -2px;
+}
+@supports (animation-timeline: view()) {
+  [data-excel='off'] .row:not(.lens) {
+    animation: focus linear both;
+    animation-timeline: view();
+  }
+  @keyframes focus {
+    0% {
+      opacity: 0.2;
+      filter: blur(3px);
+    }
+    32%,
+    72% {
+      opacity: 1;
+      filter: blur(0);
+    }
+    100% {
+      opacity: 0.25;
+      filter: blur(2.5px);
+    }
+  }
+}
+[data-excel='off'] .date {
+  all: unset;
+  position: relative;
+  flex: none;
+  width: 58px;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+}
+[data-excel='off'] .date-wd {
+  font-size: 13px;
+  color: var(--ink-3);
+}
+[data-excel='off'] .date-num {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+[data-excel='off'] .is-today .date-num,
+[data-excel='off'] .is-today .date-wd {
+  color: var(--green);
+}
+[data-excel='off'] .pending {
+  top: -2px;
+  right: 4px;
+}
+.minis {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-width: 0;
+  overflow: hidden;
+}
+.mini {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  color: var(--ink-2);
+  white-space: nowrap;
+  max-width: 190px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+}
+.mini-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mini i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--dot);
+}
+.mini.is-white i {
+  background: none;
+  box-shadow: inset 0 0 0 1.4px var(--ink-3);
+}
+.mini.is-red,
+.mini.is-black {
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, var(--ink-3) 70%, transparent);
+}
+.mini-more {
+  font-size: 12px;
+  color: var(--ink-3);
+  flex: none;
+}
+@media (max-width: 639px) {
+  .mini {
+    max-width: 120px;
+  }
+  .minis {
+    gap: 12px;
+  }
+}
+
+/* la lentille */
+.lens {
+  position: relative;
+  z-index: 1;
+  margin: 14px 12px;
+  padding: 22px 18px 18px;
+  border-radius: 28px;
+  background: var(--lens-bg);
+  border: 1px solid var(--lens-edge);
+  backdrop-filter: blur(26px) saturate(180%);
+  -webkit-backdrop-filter: blur(26px) saturate(180%);
+  box-shadow: var(--lens-shadow);
+  scroll-margin: 140px;
+  animation: lensIn 0.5s var(--ease);
+}
+.lens::before {
+  content: '';
+  position: absolute;
+  inset: -110px -60px;
+  z-index: -1;
+  background: var(--halo);
+  pointer-events: none;
+}
+@keyframes lensIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+    filter: blur(4px);
+  }
+}
+.lens-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0 4px 16px;
+}
+.lens-head h2 {
+  margin: 0;
+  font-size: clamp(26px, 6vw, 34px);
+  font-weight: 300;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+}
+.lens.is-today .lens-head h2 {
+  font-weight: 400;
+}
+.lens-progress {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  min-height: 42px;
+  padding: 0 14px 0 4px;
+  border-radius: 21px;
+  background: var(--fill);
+  color: var(--ink);
+  animation: chipIn 0.35s var(--ease) backwards;
+}
+.chip.is-white {
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: inset 0 0 0 1px rgba(40, 45, 60, 0.12);
+}
+.chip.is-black {
+  color: #f5f5f7;
+}
+@keyframes chipIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+.chip-mark {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 17px;
+  color: var(--ink-3);
+}
+.chip-mark:hover {
+  background: rgba(127, 127, 160, 0.12);
+}
+.chip-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+}
+.chip.is-red .chip-text,
+.chip.is-black .chip-text {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+.chip .carry {
+  margin-left: 8px;
+  font-size: 11px;
+  opacity: 0.7;
+}
+.chip.is-add {
+  gap: 4px;
+  padding-left: 12px;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px rgba(127, 127, 160, 0.28);
+  color: var(--ink-3);
+}
+.chip.is-add input {
+  width: 110px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  color: var(--ink);
+}
+.chip.is-add input::placeholder {
+  color: var(--ink-3);
+}
+.chip.is-add:focus-within {
+  box-shadow: inset 0 0 0 1.5px var(--green);
+}
+
+/* le bouton Aujourd'hui, flottant */
+.today-fab {
+  position: fixed;
+  right: 20px;
+  bottom: calc(env(safe-area-inset-bottom) + 22px);
+  z-index: 20;
+  width: 60px;
+  height: 60px;
+  border-radius: 30px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  line-height: 1;
+  border: 1px solid var(--lens-edge);
+  box-shadow: 0 16px 36px -12px rgba(60, 70, 110, 0.5);
+  color: var(--ink);
+  transition: transform 0.15s var(--ease);
+}
+.today-fab:active {
+  transform: scale(0.94);
+}
+.today-fab-wd {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--green);
+}
+.today-fab-num {
+  font-size: 19px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* ============================================================ NUIT ===
+   Inspirée de Crépuscule : un ciel du soir, du verre sombre, des couleurs qui luisent. */
+
+[data-theme='night'] {
+  color-scheme: dark;
+  --bg: #171a33;
+  --paper: rgba(255, 255, 255, 0.03);
+  --ink: #f1eef8;
+  --ink-2: rgba(241, 238, 248, 0.78);
+  --ink-3: rgba(241, 238, 248, 0.55);
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.16);
+  --weekend: rgba(255, 255, 255, 0.02);
+  --green: #34d399;
+  --green-ink: #6ee7b7;
+  --green-tint: rgba(52, 211, 153, 0.12);
+  --green-line: rgba(52, 211, 153, 0.4);
+  --focus: #34d399;
+  --halo: radial-gradient(ellipse at 50% 50%, rgba(255, 170, 130, 0.32), rgba(120, 140, 255, 0.2) 45%, rgba(23, 26, 51, 0) 72%);
+  --lens-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.06));
+  --lens-edge: rgba(255, 255, 255, 0.16);
+  --lens-shadow: 0 30px 70px -24px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+[data-theme='night'] ::selection {
+  background: rgba(52, 211, 153, 0.35);
+  color: #fff;
+}
+[data-theme='night'] .shell::before {
+  background:
+    radial-gradient(70% 35% at 30% 105%, rgba(255, 170, 120, 0.45), transparent 70%),
+    radial-gradient(50% 35% at 100% 20%, rgba(120, 140, 255, 0.28), transparent 70%),
+    linear-gradient(180deg, #171a33 0%, #2a2146 50%, #4a2e4f 82%, #6d4250 100%);
+}
+[data-theme='night'] .glass {
+  background: rgba(28, 26, 52, 0.62);
+}
+[data-theme='night'] .panel.glass,
+[data-theme='night'] .is-sheet .menu.glass {
+  background: rgba(32, 30, 58, 0.88);
+}
+[data-theme='night'] .menu,
+[data-theme='night'] .panel {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+[data-theme='night'] .icon,
+[data-theme='night'] .year,
+[data-theme='night'] .year button {
+  color: var(--ink-2);
+}
+[data-theme='night'] .icon:hover,
+[data-theme='night'] .year button:hover,
+[data-theme='night'] .swatch:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+[data-theme='night'] .toggle {
+  background: rgba(255, 255, 255, 0.06);
+}
+[data-theme='night'] .toggle.is-on {
+  color: #0b2a1f;
+}
+[data-theme='night'] .chrome {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+[data-theme='night'] .chip:not(.is-add),
+[data-theme='night'][data-excel='on'] .cell:not(.is-empty):not(.is-add):not(.is-more) {
+  background: color-mix(in srgb, var(--dot) 20%, transparent);
+  color: #f1eef8;
+}
+[data-theme='night'] .chip:not(.is-white):not(.is-add) {
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--dot) 42%, transparent),
+    0 8px 22px -10px color-mix(in srgb, var(--dot) 70%, transparent);
+}
+[data-theme='night'] .chip.is-white,
+[data-theme='night'] .cell.is-white {
+  background: rgba(255, 255, 255, 0.06) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+}
+[data-theme='night'] .chip.is-black {
+  background: rgba(0, 0, 0, 0.45);
+  color: rgba(241, 238, 248, 0.7);
+}
+[data-theme='night'] .mini.is-black i {
+  background: #f87171;
+}
+[data-theme='night'] .today-fab {
+  box-shadow:
+    0 16px 40px -12px rgba(0, 0, 0, 0.7),
+    0 0 30px -10px rgba(52, 211, 153, 0.6);
+}
+[data-theme='night'] .field,
+[data-theme='night'] .btn {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+[data-theme='night'] .btn.primary {
+  background: var(--green);
+  border-color: var(--green);
+  color: #0b2a1f;
+}
+[data-theme='night'] .menu-title {
+  background: rgba(255, 255, 255, 0.08);
+}
+[data-theme='night'] .menu-delete {
+  color: #fca5a5;
+}
+[data-theme='night'] .menu-delete:hover {
+  background: rgba(248, 113, 113, 0.12);
+}
+[data-theme='night'] .menu-delete,
+[data-theme='night'] .group,
+[data-theme='night'] .kv th,
+[data-theme='night'] .kv td,
+[data-theme='night'] .list li {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+[data-theme='night'][data-excel='on'] .month-row,
+[data-theme='night'][data-excel='on'] .rownum {
+  background: rgba(255, 255, 255, 0.04);
+}
+[data-theme='night'][data-excel='on'] .row.is-open {
+  background: rgba(255, 255, 255, 0.05);
 }

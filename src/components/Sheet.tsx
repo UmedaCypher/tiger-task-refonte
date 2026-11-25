@@ -34,7 +34,9 @@ export function Sheet({
   openDay,
   setOpenDay,
   scrollToToday,
+  excel,
 }: {
+  excel: boolean;
   year: number;
   cols: number;
   openDay: DayKey;
@@ -64,9 +66,13 @@ export function Sheet({
 
   useEffect(() => materializeRituals(openDay), [openDay]);
 
+  // Centrer aujourd'hui ; on recommence une fois la mise en page stabilisée (mois rendus à la demande)
   useEffect(() => {
-    const el = document.querySelector<HTMLElement>(`[data-day="${today}"]`);
-    el?.scrollIntoView({ block: 'center', behavior: scrollToToday ? 'smooth' : 'auto' });
+    const go = (smooth: boolean) =>
+      document.querySelector<HTMLElement>(`[data-day="${today}"]`)?.scrollIntoView({ block: 'center', behavior: smooth ? 'smooth' : 'auto' });
+    go(!!scrollToToday);
+    const t = setTimeout(() => go(false), scrollToToday ? 600 : 250);
+    return () => clearTimeout(t);
   }, [scrollToToday, year, today]);
 
   const months = useMemo(
@@ -91,6 +97,7 @@ export function Sheet({
               day={d}
               tasks={days.get(d) ?? EMPTY}
               cols={cols}
+              excel={excel}
               isOpen={d === openDay}
               isToday={d === today}
               isPast={d < today}
@@ -111,6 +118,7 @@ const Row = memo(function Row({
   day,
   tasks,
   cols,
+  excel,
   isOpen,
   isToday,
   isPast,
@@ -120,6 +128,7 @@ const Row = memo(function Row({
   day: DayKey;
   tasks: Task[];
   cols: number;
+  excel: boolean;
   isOpen: boolean;
   isToday: boolean;
   isPast: boolean;
@@ -129,6 +138,53 @@ const Row = memo(function Row({
   const wd = weekday(day);
   const pending = isPast && tasks.some((t) => t.pigment === 'white');
   const cls = ['row', isOpen && 'is-open', isToday && 'is-today', wd >= 5 && 'is-weekend'].filter(Boolean).join(' ');
+
+  const date = fromKey(day);
+  const label = date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+
+  if (!excel) {
+    // ---- Focale : le jour ouvert est une lentille, les autres jours une ligne légère
+    if (isOpen) {
+      const done = tasks.filter((t) => PIGMENTS[t.pigment].done).length;
+      return (
+        <div className={cls + ' lens'} data-day={day}>
+          <div className="lens-head">
+            <h2>{label.charAt(0).toUpperCase() + label.slice(1)}</h2>
+            {tasks.length > 0 && (
+              <span className="lens-progress">
+                {done}/{tasks.length}
+              </span>
+            )}
+          </div>
+          <div className="chips">
+            {tasks.map((t) => (
+              <Chip key={t.id} task={t} onMenu={onMenu} />
+            ))}
+            <AddCell day={day} autoFocus={tasks.length === 0 && !isPast} className="chip is-add" />
+          </div>
+        </div>
+      );
+    }
+    const shown = tasks.slice(0, cols);
+    return (
+      <button className={cls} data-day={day} onClick={() => onOpen(day)} aria-label={`Ouvrir le ${label}`}>
+        <span className="date">
+          <span className="date-wd">{WD[wd]}</span>
+          <span className="date-num">{date.getDate()}</span>
+          {pending && <span className="pending" title="Des tâches attendent leur couleur" />}
+        </span>
+        <span className="minis">
+          {shown.map((t) => (
+            <span key={t.id} className={`mini is-${t.pigment}`} style={{ ['--dot' as string]: PIGMENTS[t.pigment].color }}>
+              <i />
+              <span className="mini-text">{t.text}</span>
+            </span>
+          ))}
+          {tasks.length > shown.length && <span className="mini-more">+{tasks.length - shown.length}</span>}
+        </span>
+      </button>
+    );
+  }
 
   let cells: React.ReactNode[];
   if (isOpen) {
@@ -144,7 +200,6 @@ const Row = memo(function Row({
     for (let i = cells.length; i < cols; i++) cells.push(<div key={`f${i}`} className="cell is-empty" />);
   }
 
-  const date = fromKey(day);
   return (
     <div
       className={cls}
@@ -158,7 +213,7 @@ const Row = memo(function Row({
           onOpen(day);
         }
       }}
-      aria-label={isOpen ? undefined : `Ouvrir le ${date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}`}
+      aria-label={isOpen ? undefined : `Ouvrir le ${label}`}
     >
       <div className="rownum">{dayOfYear(day)}</div>
       <div className="date">
@@ -244,11 +299,11 @@ function More({ tasks }: { tasks: Task[] }) {
   );
 }
 
-function AddCell({ day, autoFocus }: { day: DayKey; autoFocus: boolean }) {
+function AddCell({ day, autoFocus, className = 'cell is-add' }: { day: DayKey; autoFocus: boolean; className?: string }) {
   const [v, setV] = useState('');
   return (
     <form
-      className="cell is-add"
+      className={className}
       onClick={(e) => e.stopPropagation()}
       onSubmit={(e) => {
         e.preventDefault();
@@ -259,7 +314,27 @@ function AddCell({ day, autoFocus }: { day: DayKey; autoFocus: boolean }) {
       <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
         <path d="M8 3.5v9M3.5 8h9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
       </svg>
-      <input value={v} onChange={(e) => setV(e.target.value)} placeholder="Nouvelle tâche" aria-label="Nouvelle tâche" enterKeyHint="done" autoFocus={autoFocus && window.innerWidth > 640} />
+      <input value={v} onChange={(e) => setV(e.target.value)} placeholder="Ajouter" aria-label="Nouvelle tâche" enterKeyHint="done" autoFocus={autoFocus && window.innerWidth > 640} />
     </form>
+  );
+}
+
+function Chip({ task, onMenu }: { task: Task; onMenu: (id: string, rect: DOMRect) => void }) {
+  const p = PIGMENTS[task.pigment];
+  const ref = useRef<HTMLDivElement>(null);
+  return (
+    <div ref={ref} className={`chip is-${task.pigment}`} style={{ ['--dot' as string]: p.color, ['--fill' as string]: p.fill, ['--ink' as string]: p.ink }}>
+      <button
+        className="chip-mark"
+        aria-label={task.pigment === 'white' ? `Marquer « ${task.text} » comme faite` : `Remettre « ${task.text} » à faire`}
+        onClick={() => quickComplete(task.id)}
+      >
+        <MarkIcon pigment={task.pigment} />
+      </button>
+      <button className="chip-text" onClick={() => onMenu(task.id, ref.current!.getBoundingClientRect())}>
+        {task.text}
+      </button>
+      {task.carryCount > 0 && <span className="carry" title={`Reportée ${task.carryCount} fois`}>↻{task.carryCount}</span>}
+    </div>
   );
 }

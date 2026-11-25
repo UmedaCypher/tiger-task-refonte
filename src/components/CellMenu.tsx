@@ -68,7 +68,7 @@ export function CellMenu({ taskId, anchor, onClose }: { taskId: string; anchor: 
                     onClose();
                   }}
                 >
-                  <span className={`chip is-${p}`} style={{ background: p === 'white' ? 'transparent' : info.color }} />
+                  <span className={`swatch-chip is-${p}`} style={{ background: p === 'white' ? 'transparent' : info.color }} />
                   <span className="swatch-name">{info.name}</span>
                   <span className="swatch-meaning">{info.meaning}</span>
                   {info.carries && <span className="swatch-tag">→ demain</span>}

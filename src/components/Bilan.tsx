@@ -33,7 +33,7 @@ export function Bilan({ year }: { year: number }) {
           {PIGMENT_ORDER.map((p) => (
             <tr key={p}>
               <th>
-                <span className={`chip is-${p}`} style={{ background: p === 'white' ? 'transparent' : PIGMENTS[p].color }} />
+                <span className={`swatch-chip is-${p}`} style={{ background: p === 'white' ? 'transparent' : PIGMENTS[p].color }} />
                 {PIGMENTS[p].name}
               </th>
               <td>{b.counts[p]}</td>

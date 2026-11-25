@@ -8,9 +8,45 @@ import { refreshProfile } from './lib/supabase';
 import { startSync } from './lib/sync';
 
 type PanelId = 'bilan' | 'rituels' | 'compte';
+const WD_SHORT = ['DIM', 'LUN', 'MAR', 'MER', 'JEU', 'VEN', 'SAM'];
 const PANEL_TITLES: Record<PanelId, string> = { bilan: 'Bilan', rituels: 'Rituels', compte: 'Compte' };
 
 let syncStarted = false;
+
+type Theme = 'auto' | 'day' | 'night';
+interface Prefs {
+  theme: Theme;
+  excel: boolean;
+}
+const PREFS_KEY = 'tiger-task:prefs';
+function loadPrefs(): Prefs {
+  try {
+    return { theme: 'auto', excel: false, ...JSON.parse(localStorage.getItem(PREFS_KEY) ?? '{}') };
+  } catch {
+    return { theme: 'auto', excel: false };
+  }
+}
+
+/** Thème effectif : auto suit le réglage clair/sombre de l'appareil */
+function useTheme(theme: Theme) {
+  const mq = typeof window !== 'undefined' ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+  const [dark, setDark] = useState(mq?.matches ?? false);
+  useEffect(() => {
+    if (!mq) return;
+    const h = (e: MediaQueryListEvent) => setDark(e.matches);
+    mq.addEventListener('change', h);
+    return () => mq.removeEventListener('change', h);
+  }, [mq]);
+  return theme === 'auto' ? (dark ? 'night' : 'day') : theme;
+}
+
+const THEME_NEXT: Record<Theme, Theme> = { auto: 'day', day: 'night', night: 'auto' };
+const THEME_LABEL: Record<Theme, string> = { auto: 'Thème automatique', day: 'Thème jour', night: 'Thème nuit' };
+const THEME_ICON: Record<Theme, string> = {
+  auto: 'M10 3a7 7 0 1 0 0 14V3Z M10 3a7 7 0 0 1 0 14',
+  day: 'M10 6.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7ZM10 2v1.6M10 16.4V18M2 10h1.6M16.4 10H18M4.3 4.3l1.2 1.2M14.5 14.5l1.2 1.2M4.3 15.7l1.2-1.2M14.5 5.5l1.2-1.2',
+  night: 'M16 12.5A6.5 6.5 0 0 1 7.5 4a6.5 6.5 0 1 0 8.5 8.5Z',
+};
 
 export function App() {
   const today = todayKey();
@@ -21,6 +57,21 @@ export function App() {
   const [toast, setToast] = useState<string | null>(null);
   const shell = useRef<HTMLDivElement>(null);
   const cols = useColumns(shell);
+  const [prefs, setPrefs] = useState<Prefs>(loadPrefs);
+  const mode = useTheme(prefs.theme);
+  const setPref = (patch: Partial<Prefs>) =>
+    setPrefs((p) => {
+      const next = { ...p, ...patch };
+      localStorage.setItem(PREFS_KEY, JSON.stringify(next));
+      return next;
+    });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.dataset.theme = mode;
+    root.dataset.excel = prefs.excel ? 'on' : 'off';
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', mode === 'night' ? '#171a33' : '#f3f2f7');
+  }, [mode, prefs.excel]);
 
   useEffect(() => {
     if (!syncStarted) {
@@ -85,14 +136,21 @@ export function App() {
             </button>
           </div>
           <div className="actions">
-            <button className="pill" onClick={goToday}>
-              Aujourd’hui
+            <button
+              className={`toggle ${prefs.excel ? 'is-on' : ''}`}
+              role="switch"
+              aria-checked={prefs.excel}
+              onClick={() => setPref({ excel: !prefs.excel })}
+            >
+              Excel
             </button>
+            <IconButton label={THEME_LABEL[prefs.theme]} onClick={() => setPref({ theme: THEME_NEXT[prefs.theme] })} d={THEME_ICON[prefs.theme]} />
             <IconButton label="Bilan" onClick={() => setPanel('bilan')} d="M4 17V10M10 17V5M16 17v-4" />
             <IconButton label="Rituels" onClick={() => setPanel('rituels')} d="M15.5 6.5A6 6 0 1 0 16 12M16 3.5v3h-3" />
             <IconButton label="Compte" onClick={() => setPanel('compte')} d="M10 10a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4ZM4 17c1.1-3 3.4-4.4 6-4.4s4.9 1.4 6 4.4" />
           </div>
         </div>
+        {prefs.excel && (
         <div className="colhead" style={{ ['--cols' as string]: cols }} aria-hidden="true">
           <span className="rownum" />
           <span className="date" />
@@ -104,14 +162,20 @@ export function App() {
               ))}
           </span>
         </div>
+        )}
       </header>
 
       <main>
-        <Sheet year={year} cols={cols} openDay={openDay} setOpenDay={setOpenDay} scrollToToday={toToday} />
+        <Sheet year={year} cols={cols} excel={prefs.excel} openDay={openDay} setOpenDay={setOpenDay} scrollToToday={toToday} />
         <p className="credit">
           D’après la méthode de Fibre Tigre : une ligne par jour, une couleur par tâche.
         </p>
       </main>
+
+      <button className="today-fab glass" onClick={goToday} aria-label="Revenir à aujourd’hui">
+        <span className="today-fab-wd">{WD_SHORT[new Date().getDay()]}</span>
+        <span className="today-fab-num">{new Date().getDate()}</span>
+      </button>
 
       {panel && (
         <div className="panel-layer" onMouseDown={() => setPanel(null)}>
