@@ -290,6 +290,7 @@ export function createMascot(canvas: HTMLCanvasElement, opts: MascotOpts) {
 
   const T = buildTigerHead();
   scene.add(T.root);
+  let redraw = () => {};
 
   // un modèle 3D fourni (public/models/tiger-head.glb) remplace la tête sculptée en code
   (async () => {
@@ -305,7 +306,7 @@ export function createMascot(canvas: HTMLCanvasElement, opts: MascotOpts) {
       m.position.sub(box.getCenter(new THREE.Vector3()));
       T.head.visible = false;
       T.root.add(m);
-      frame();
+      redraw();
     } catch {
       /* on garde la tête sculptée */
     }
@@ -381,6 +382,7 @@ export function createMascot(canvas: HTMLCanvasElement, opts: MascotOpts) {
     renderer.render(scene, camera);
   };
 
+  redraw = () => frame();
   let running = false;
   const loop = () => {
     frame();
