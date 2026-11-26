@@ -206,13 +206,6 @@ const Row = memo(function Row({
             )}
           </div>
           <p className="lens-line">{dayLine(tasks, day, todayKey())}</p>
-          {tasks.length > 0 && (
-            <div className="lens-bar" aria-hidden="true">
-              {tasks.map((t) => (
-                <i key={t.id} className={`seg is-${t.pigment}`} style={{ ['--dot' as string]: PIGMENTS[t.pigment].color }} />
-              ))}
-            </div>
-          )}
           <div className="chips">
             {tasks.map((t) => (
               <Chip key={t.id} task={t} onMenu={onMenu} />
