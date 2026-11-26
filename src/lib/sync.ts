@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getState, markAllDirty, markSynced, mergeRemote, subscribe, type Ritual, type Task } from './store';
-import { getAuth, onAuth, supabase, SYNC_REQUIRES_PREMIUM } from './supabase';
+import { getAuth, onAuth, supabase } from './supabase';
 
 /**
  * Synchronisation local-first :
@@ -85,10 +85,8 @@ const rowToRitual = (r: any): Ritual => ({
 });
 
 function canSync() {
-  const { session, profile } = getAuth();
-  if (!supabase || !session) return false;
-  if (SYNC_REQUIRES_PREMIUM && !profile?.is_premium) return false;
-  return true;
+  // tout compte connecté synchronise, gratuit ou Pro
+  return !!supabase && !!getAuth().session;
 }
 
 let running = false;

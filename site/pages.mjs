@@ -20,7 +20,7 @@ const pricingCards = (founderNote = true) => `
       <li>La feuille du jour, les 7 couleurs, les reports</li>
       <li>Tes 30 derniers jours, nets et lisibles</li>
       <li>Rituels, mode nuit, mode Excel</li>
-      <li>Sur un appareil, même hors ligne</li>
+      <li>Sur tous tes appareils, même hors ligne</li>
     </ul>
     <a class="btn btn-ghost" href="/app/">Commencer gratuitement</a>
   </article>
@@ -32,7 +32,7 @@ const pricingCards = (founderNote = true) => `
     <ul>
       <li>Chaque jour de ton année, et des suivantes</li>
       <li>Ton bilan : ce que tu fais vraiment de ton temps</li>
-      <li>Ta feuille synchronisée sur tous tes appareils</li>
+      <li>Tes statistiques et tes tâches les plus reportées</li>
       <li>Les widgets d’écran d’accueil, dès leur sortie</li>
     </ul>
     <a class="btn btn-primary" href="/app/?offre=annuel">Passer à Pro</a>
@@ -196,7 +196,7 @@ export const tarifs = {
 <section class="pricing"><div class="wrap">${pricingCards()}</div></section>
 <section class="prose wrap narrow">
   <h2>Gratuit ou Pro&nbsp;?</h2>
-  <p>En gratuit, tu as toute la méthode&nbsp;: la feuille, les couleurs, les reports, les rituels. Tes 30 derniers jours restent nets&nbsp;; les plus anciens s’effacent doucement dans le flou. Avec Pro, ton année entière reste lisible, ton bilan s’affiche, et ta feuille te suit sur tous tes appareils.</p>
+  <p>En gratuit, tu as toute la méthode, sur tous tes appareils&nbsp;: la feuille, les couleurs, les reports, les rituels. Tes 30 derniers jours restent nets&nbsp;; les plus anciens sont bien sauvegardés, mais s’effacent dans le flou. Avec Pro, ton année entière reste lisible et ton bilan s’affiche.</p>
   <h2>Un ami t’a recommandé Tiger Task&nbsp;?</h2>
   <p>Ton premier mois est offert sur les offres mensuelle et annuelle, et l’offre à vie est à −10&nbsp;%.</p>
   <h2>Questions sur le paiement</h2>
@@ -212,9 +212,9 @@ export const tarifs = {
 };
 
 const faqs = [
-  ['Tiger Task est-il gratuit&nbsp;?', 'Oui. Toute la méthode est gratuite, sans limite de durée et sans carte bancaire. Pro garde ton année entière, ton bilan et la synchronisation entre appareils.'],
+  ['Tiger Task est-il gratuit&nbsp;?', 'Oui. Toute la méthode est gratuite, sans limite de durée et sans carte bancaire, et ta feuille se synchronise sur tous tes appareils dès que tu crées un compte. Pro rend ton année entière lisible et ajoute ton bilan.'],
   ['Est-ce que ça marche sur iPhone et Android&nbsp;?', 'Oui. Ouvre l’app dans ton navigateur, puis « Ajouter à l’écran d’accueil » : elle s’installe comme une vraie app, et fonctionne même hors ligne. Des widgets d’écran d’accueil arrivent bientôt.'],
-  ['Où sont stockées mes tâches&nbsp;?', 'D’abord sur ton appareil. Si tu te connectes avec Pro, elles sont aussi synchronisées sur nos serveurs, uniquement pour te les rendre sur tes autres appareils. Personne d’autre ne les lit.'],
+  ['Où sont stockées mes tâches&nbsp;?', 'Sur ton appareil, pour que l’app soit instantanée et marche hors ligne. Avec un compte (gratuit), elles sont aussi sauvegardées sur nos serveurs et synchronisées sur tes autres appareils. Personne d’autre ne les lit.'],
   ['Je n’ai jamais tenu une to-do list plus d’une semaine. Pourquoi celle-ci&nbsp;?', 'Parce qu’elle ne te demande presque rien : une ligne le matin, une couleur le soir. Et parce qu’elle te montre ce que tu repousses, ce qui donne une vraie raison d’y revenir.'],
   ['C’est quoi les sept couleurs&nbsp;?', 'Faite, enfin faite, reportée par flemme, reportée par imprévu, pas faite, échec, et à faire. Le détail est sur la page <a href="/methode/">La méthode</a>.'],
   ['Puis-je exporter mes données&nbsp;?', 'Oui, à tout moment et gratuitement, depuis ton compte. Tes données t’appartiennent.'],
@@ -313,8 +313,8 @@ export const confidentialite = legal(
   '/confidentialite/',
   'Politique de confidentialité',
   'Comment Tiger Task traite tes données.',
-  `<h2>Ce que nous collectons</h2><p>Sans compte, tes tâches restent sur ton appareil. Avec un compte, nous conservons ton email, et, si tu as Pro, tes tâches synchronisées. Pour améliorer l’app, nous mesurons des événements d’usage anonymes (ouverture de l’app, journée colorée, affichage de l’offre), avec un identifiant aléatoire, jamais le contenu de tes tâches.</p>
-<h2>Pourquoi</h2><p>Pour faire fonctionner ton compte et la synchronisation, traiter les paiements, calculer les commissions d’affiliation et comprendre l’usage de l’app.</p>
+  `<h2>Ce que nous collectons</h2><p>Sans compte, tes tâches restent sur ton appareil. Avec un compte, nous conservons ton email et tes tâches, pour les sauvegarder et les synchroniser entre tes appareils. Pour améliorer l’app, nous mesurons des événements d’usage anonymes (ouverture de l’app, journée colorée, affichage de l’offre), avec un identifiant aléatoire, jamais le contenu de tes tâches.</p>
+<h2>Pourquoi</h2><p>Pour faire fonctionner ton compte, sauvegarder et synchroniser tes tâches, traiter les paiements, calculer les commissions d’affiliation et comprendre l’usage de l’app.</p>
 <h2>Avec qui</h2><p>Supabase (comptes et données), Stripe (paiements), Cloudflare (hébergement). Aucune revente, aucune publicité.</p>
 <h2>Tes droits</h2><p>Accès, rectification, suppression, portabilité&nbsp;: écris à [EMAIL DE CONTACT]. L’export de tes tâches est disponible à tout moment dans l’app. Tu peux aussi saisir la CNIL.</p>
 <h2>Cookies</h2><p>Un seul cookie technique, posé quand tu arrives par un lien d’affilié (60 jours), pour attribuer la recommandation. Aucun cookie publicitaire.</p>`,

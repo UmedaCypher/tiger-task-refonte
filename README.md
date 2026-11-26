@@ -18,12 +18,14 @@ Données : Supabase (comptes, synchronisation Pro, paiements, commissions, OKR).
 
 | | Prix TTC | Notes |
 |---|---|---|
-| Gratuit | 0 € | Toute la méthode ; les 30 derniers jours restent nets, les plus anciens sont floutés |
+| Gratuit | 0 € | Toute la méthode, synchronisée sur tous les appareils avec un compte ; les 30 derniers jours restent nets, les plus anciens sont sauvegardés mais floutés |
 | Pro mensuel | 3,99 € | |
 | Pro annuel | 29,90 € | Offre de rattrapage unique : 19,90 € la 1re année si on refuse l’offre |
 | Pro à vie | 79,90 € | 59,90 € « Fondateurs » pour les 500 premiers |
 
-Pro = tout l’historique, le bilan, la synchronisation, les futurs widgets.
+Pro = toute l’année lisible, le bilan, les futurs widgets.
+
+Les tâches sont gardées sur l’appareil (app instantanée, hors ligne, utilisable sans compte) **et** dans Supabase dès qu’on a un compte (sauvegarde + synchronisation), y compris en gratuit.
 
 **Affiliation** : 7 € par abonnement annuel (1re année seulement), 15 € par offre à vie, payables 30 jours après le paiement, virement dès 20 €. La personne recommandée a 30 jours offerts (mensuel et annuel) ou −10 % (à vie). Rien sur le mensuel, sauf passage à l’annuel dans les 60 jours. Les règles sont dans `worker/shared.ts` (`RULES`).
 
@@ -43,7 +45,7 @@ STRIPE_SECRET_KEY=sk_test_... APP_URL=https://<ton-adresse> npm run stripe:setup
 Le script crée le produit, les 4 prix, les 2 coupons et le webhook, et affiche les variables à copier. Active aussi le portail client (Stripe › Settings › Billing › Customer portal). Refais-le avec la clé `sk_live_` le jour du lancement.
 
 ### 3. Cloudflare (Workers & Pages › tiger-task › Settings)
-- **Build › Variables** (lues au build) : `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`. Supprime `VITE_SYNC_REQUIRES_PREMIUM` (remplacée : la synchronisation fait partie de Pro).
+- **Build › Variables** (lues au build) : `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`. Tu peux supprimer `VITE_SYNC_REQUIRES_PREMIUM`, qui ne sert plus.
 - **Variables and secrets** (lues par le Worker) :
   - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (secret)
   - `STRIPE_SECRET_KEY` (secret), `STRIPE_WEBHOOK_SECRET` (secret)

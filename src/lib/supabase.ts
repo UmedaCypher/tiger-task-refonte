@@ -8,8 +8,6 @@ const anon = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 export const supabase: SupabaseClient | null =
   url && anon ? createClient(url, anon, { auth: { persistSession: true, detectSessionInUrl: true } }) : null;
 
-/** La synchronisation fait partie de Pro (VITE_SYNC_FREE=true pour l'ouvrir à tous, par exemple en test) */
-export const SYNC_REQUIRES_PREMIUM = import.meta.env.VITE_SYNC_FREE !== 'true';
 
 export interface Profile {
   id: string;

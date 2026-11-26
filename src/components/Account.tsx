@@ -6,9 +6,9 @@ import { Affiliate } from './Affiliate';
 import { openPaywall } from './Paywall';
 
 const SYNC_LABEL: Record<string, string> = {
-  off: 'Données sur cet appareil uniquement',
-  locked: 'La synchronisation fait partie de Pro',
-  idle: 'Synchronisé',
+  off: 'Sur cet appareil uniquement',
+  locked: 'Synchronisation en pause',
+  idle: 'Synchronisée sur tous tes appareils',
   syncing: 'Synchronisation…',
   error: 'Synchronisation impossible pour l’instant',
   offline: 'Hors ligne. Tout partira au retour du réseau.',
@@ -46,39 +46,46 @@ export function Account({ onReplayOnboarding }: { onReplayOnboarding: () => void
 
   return (
     <div className="stack">
-      <section className="group">
-        {!supabase && <p className="muted">Tes tâches sont enregistrées sur cet appareil et fonctionnent hors ligne.</p>}
-        {supabase && ready && !session && (
+      {/* 1. Où sont mes tâches ? */}
+      <section className={`status-card ${session ? 'is-safe' : 'is-local'}`}>
+        {!session ? (
           <>
-            <h3>Ton compte</h3>
-            <p className="muted">Pour passer à Pro, devenir affilié et retrouver ta feuille sur tous tes appareils. Ce qui est déjà ici est conservé.</p>
-            {sent ? (
-              <p className="ok">Lien envoyé. Ouvre-le sur cet appareil.</p>
+            <h3>Ta feuille n’est que sur cet appareil</h3>
+            <p className="muted">
+              Crée ton compte gratuit pour la sauvegarder et la retrouver sur ton téléphone comme sur ton ordinateur. Ce qui est déjà ici est
+              conservé.
+            </p>
+            {!supabase ? (
+              <p className="muted">Les comptes arrivent bientôt.</p>
+            ) : sent ? (
+              <p className="ok">Lien envoyé à {email}. Ouvre-le sur cet appareil pour te connecter.</p>
             ) : (
-              <form
-                className="stack tight"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  run(async () => {
-                    await signInWithEmail(email);
-                    setSent(true);
-                  });
-                }}
-              >
-                <input className="field" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="nom@email.fr" aria-label="Email" />
-                <button className="btn primary" disabled={busy}>
-                  Recevoir un lien de connexion
+              <>
+                <form
+                  className="stack tight"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    run(async () => {
+                      await signInWithEmail(email);
+                      setSent(true);
+                    });
+                  }}
+                >
+                  <input className="field" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="nom@email.fr" aria-label="Email" />
+                  <button className="btn primary" disabled={busy || !ready}>
+                    Créer mon compte ou me connecter
+                  </button>
+                </form>
+                <button className="btn" onClick={() => run(signInWithGoogle)}>
+                  Continuer avec Google
                 </button>
-              </form>
+                <p className="fine-print">Pas de mot de passe : tu reçois un lien de connexion par email.</p>
+              </>
             )}
-            <button className="btn" onClick={() => run(signInWithGoogle)}>
-              Continuer avec Google
-            </button>
           </>
-        )}
-        {session && (
+        ) : (
           <>
-            <p>{session.user.email}</p>
+            <h3>{sync === 'error' || sync === 'offline' ? 'Ta feuille attend le réseau' : 'Ta feuille est sauvegardée'}</h3>
             <p className={`sync is-${sync}`}>
               <i /> {SYNC_LABEL[sync]}
               {(sync === 'idle' || sync === 'error') && (
@@ -87,23 +94,17 @@ export function Account({ onReplayOnboarding }: { onReplayOnboarding: () => void
                 </button>
               )}
             </p>
-            {profile?.is_admin && (
-              <a className="btn" href="/admin/">
-                Ouvrir le back-office
-              </a>
-            )}
-            <button className="btn ghost" onClick={() => signOut()}>
-              Se déconnecter
-            </button>
+            <p className="muted">Connecté avec {session.user.email}. Connecte-toi avec le même email sur tes autres appareils.</p>
           </>
         )}
       </section>
 
+      {/* 2. Mon offre */}
       <section className="group">
-        <h3>Tiger Task Pro</h3>
+        <h3>Ton offre</h3>
         {profile?.is_premium ? (
           <>
-            <p className="ok">{PLAN_LABEL[profile.premium_plan ?? 'yearly']} actif. Merci de soutenir Tiger Task.</p>
+            <p className="ok">{PLAN_LABEL[profile.premium_plan ?? 'yearly']} : toute ton année et ton bilan. Merci de soutenir Tiger Task.</p>
             {profile.premium_plan !== 'lifetime' && (
               <button
                 className="btn"
@@ -121,14 +122,18 @@ export function Account({ onReplayOnboarding }: { onReplayOnboarding: () => void
           </>
         ) : (
           <>
-            <p className="muted">Garde toute ton année lisible, vois ton bilan, retrouve ta feuille partout.</p>
+            <p className="muted">
+              <strong>Gratuit</strong> : toute la méthode, sur tous tes appareils. Tes 30 derniers jours restent nets, les plus anciens sont
+              sauvegardés mais floutés.
+            </p>
             <button className="btn primary" onClick={() => openPaywall('upgrade')}>
-              Découvrir Pro
+              Débloquer toute mon année
             </button>
           </>
         )}
       </section>
 
+      {/* 3. Recommander */}
       {session && (
         <section className="group">
           <h3>Recommander Tiger Task</h3>
@@ -138,15 +143,21 @@ export function Account({ onReplayOnboarding }: { onReplayOnboarding: () => void
 
       {err && <p className="err">{err}</p>}
 
+      {/* 4. Le reste */}
       <section className="group">
-        <h3>Données</h3>
+        <h3>Plus</h3>
         {install && (
           <button className="btn" onClick={install}>
-            Installer l’app
+            Installer l’app sur cet appareil
           </button>
         )}
+        {profile?.is_admin && (
+          <a className="btn" href="/admin/">
+            Ouvrir le back-office
+          </a>
+        )}
         <button className="btn" onClick={download}>
-          Exporter en JSON
+          Exporter mes tâches (JSON)
         </button>
         <button className="btn ghost" onClick={onReplayOnboarding}>
           Revoir la présentation
@@ -154,6 +165,11 @@ export function Account({ onReplayOnboarding }: { onReplayOnboarding: () => void
         <button className="btn ghost" onClick={clearExamples}>
           Effacer les tâches d’exemple
         </button>
+        {session && (
+          <button className="btn ghost" onClick={() => signOut()}>
+            Se déconnecter
+          </button>
+        )}
       </section>
     </div>
   );

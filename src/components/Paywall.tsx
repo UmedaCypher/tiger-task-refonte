@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { getReferral, setPendingPlan, startCheckout, track, useFounderSeats, type PlanChoice } from '../lib/growth';
 import { signInWithEmail, supabase, useAuth } from '../lib/supabase';
 
-export type PaywallReason = 'history' | 'bilan' | 'sync' | 'upgrade';
+export type PaywallReason = 'history' | 'bilan' | 'upgrade';
 
 /* ----- ouverture depuis n'importe où ----- */
 const listeners = new Set<(r: PaywallReason) => void>();
@@ -20,10 +20,6 @@ const COPY: Record<PaywallReason, { title: string; lead: string }> = {
   bilan: {
     title: 'Vois enfin où passe ton temps.',
     lead: 'Ce que tu fais vraiment, ce que tu repousses, ce que tu fuis depuis des semaines. Le bilan ne ment pas, et c’est pour ça qu’il aide.',
-  },
-  sync: {
-    title: 'Ta feuille, partout avec toi.',
-    lead: 'Commence ta journée sur ton téléphone, termine-la sur ton ordinateur. La même feuille, toujours à jour.',
   },
   upgrade: {
     title: 'Deviens la personne qui tient sa journée.',
@@ -91,7 +87,7 @@ function Paywall({ reason, onClose }: { reason: PaywallReason; onClose: () => vo
       <ul className="pw-gains">
         <li>Relis chaque jour de ton année, et de toutes les suivantes</li>
         <li>Ton bilan : ce que tu fais vraiment, ce que tu repousses</li>
-        <li>Ta feuille synchronisée sur tous tes appareils</li>
+        <li>Les widgets d’écran d’accueil, dès leur sortie</li>
       </ul>
       <div className="pw-plans" role="radiogroup" aria-label="Offre">
         {options.map((o) => (
