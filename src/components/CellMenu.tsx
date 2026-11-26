@@ -1,8 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { PIGMENT_ORDER, PIGMENTS } from '../lib/pigments';
 import { trackDaily } from '../lib/growth';
-import { roastFor, say } from '../lib/roast';
-import { deleteTask, editTask, getState, setPigment, tasksOf, useStore } from '../lib/store';
+import { deleteTask, editTask, setPigment, useStore } from '../lib/store';
+import { afterVerdict } from '../lib/verdict';
 
 /** Menu d'une cellule : renommer, donner sa couleur, effacer. Popover sur ordinateur, feuille sur mobile. */
 export function CellMenu({ taskId, anchor, onClose }: { taskId: string; anchor: DOMRect; onClose: () => void }) {
@@ -68,8 +68,7 @@ export function CellMenu({ taskId, anchor, onClose }: { taskId: string; anchor: 
                     editTask(taskId, text);
                     setPigment(taskId, p);
                     if (p !== 'white') trackDaily('day_colored');
-                    const st = getState();
-                    if (task.pigment !== p) say(roastFor(task, p, tasksOf(st, task.date)));
+                    afterVerdict(task, p);
                     onClose();
                   }}
                 >

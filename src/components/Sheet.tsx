@@ -2,8 +2,10 @@ import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'rea
 import { dayOfYear, fromKey, monthName, todayKey, toKey, weekday, type DayKey } from '../lib/date';
 import { PIGMENTS } from '../lib/pigments';
 import { byDay } from '../lib/stats';
-import { dayLine, roastFor, say } from '../lib/roast';
-import { addTask, getState, materializeRituals, quickComplete, tasksOf, useStore, type Task } from '../lib/store';
+import { verdictFx } from '../lib/fx';
+import { dayLine } from '../lib/roast';
+import { addTask, getState, materializeRituals, quickComplete, useStore, type Task } from '../lib/store';
+import { afterVerdict } from '../lib/verdict';
 import { trackDaily } from '../lib/growth';
 import { CellMenu } from './CellMenu';
 
@@ -134,8 +136,7 @@ const EMPTY: Task[] = [];
 function completeWithRoast(task: Task) {
   quickComplete(task.id);
   trackDaily('day_colored');
-  const s = getState();
-  say(roastFor(task, s.tasks[task.id].pigment, tasksOf(s, task.date)));
+  afterVerdict(task, getState().tasks[task.id].pigment);
 }
 
 const Row = memo(function Row({
@@ -205,6 +206,13 @@ const Row = memo(function Row({
             )}
           </div>
           <p className="lens-line">{dayLine(tasks, day, todayKey())}</p>
+          {tasks.length > 0 && (
+            <div className="lens-bar" aria-hidden="true">
+              {tasks.map((t) => (
+                <i key={t.id} className={`seg is-${t.pigment}`} style={{ ['--dot' as string]: PIGMENTS[t.pigment].color }} />
+              ))}
+            </div>
+          )}
           <div className="chips">
             {tasks.map((t) => (
               <Chip key={t.id} task={t} onMenu={onMenu} />
@@ -328,7 +336,7 @@ function MarkIcon({ pigment }: { pigment: Task['pigment'] }) {
   return (
     <svg viewBox="0 0 16 16" width="16" height="16">
       <rect x="2" y="2" width="12" height="12" rx="3.5" fill="var(--dot)" />
-      {done && <path d="M5 8.2 7 10.2 11 6" fill="none" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />}
+      {done && <path className="check" d="M5 8.2 7 10.2 11 6" fill="none" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" pathLength={1} />}
       {pigment === 'yellow' || pigment === 'purple' ? <path d="M6 8h4M8.5 6.2 10.3 8 8.5 9.8" fill="none" stroke="#fff" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /> : null}
       {pigment === 'red' || pigment === 'black' ? <path d="M6 6l4 4M10 6l-4 4" fill="none" stroke={pigment === 'black' ? '#e5483b' : '#fff'} strokeWidth="1.5" strokeLinecap="round" /> : null}
     </svg>
@@ -371,8 +379,19 @@ function AddCell({ day, autoFocus, className = 'cell is-add' }: { day: DayKey; a
 function Chip({ task, onMenu }: { task: Task; onMenu: (id: string, rect: DOMRect) => void }) {
   const p = PIGMENTS[task.pigment];
   const ref = useRef<HTMLDivElement>(null);
+  const prev = useRef(task.pigment);
+  const [fx, setFx] = useState<{ n: number; p: string } | null>(null);
+  useEffect(() => {
+    if (prev.current === task.pigment) return;
+    prev.current = task.pigment;
+    setFx((f) => ({ n: (f?.n ?? 0) + 1, p: task.pigment }));
+    verdictFx(task.pigment, ref.current);
+  }, [task.pigment]);
   return (
-    <div ref={ref} className={`chip is-${task.pigment}`} style={{ ['--dot' as string]: p.color, ['--fill' as string]: p.fill, ['--ink' as string]: p.ink }}>
+    <div
+      ref={ref}
+      key={fx?.n ?? 0}
+      className={`chip is-${task.pigment} ${fx ? `fx-${fx.p}` : ''}`} style={{ ['--dot' as string]: p.color, ['--fill' as string]: p.fill, ['--ink' as string]: p.ink }}>
       <button
         className="chip-mark"
         aria-label={task.pigment === 'white' ? `Marquer « ${task.text} » comme faite` : `Remettre « ${task.text} » à faire`}

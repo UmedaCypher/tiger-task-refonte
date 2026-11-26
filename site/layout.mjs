@@ -81,7 +81,7 @@ export function appMock({ night = false } = {}) {
   const mini = ([c, t]) => `<span class="m-mini"><i class="d-${c}"></i>${t}</span>`;
   const row = ([wd, n, ts], i, arr, dir) =>
     `<div class="m-row" style="--k:${dir === 'up' ? arr.length - i : i + 1}"><b>${wd} <strong>${n}</strong></b>${ts.map(mini).join('')}</div>`;
-  const chip = (c, t, done) => `<span class="m-chip c-${c}"><i>${done ? '✓' : ''}</i>${t}</span>`;
+  const chip = (c, t, done) => `<span class="m-chip c-${c}" data-c="${c}"><i>${done ? '✓' : ''}</i>${t}</span>`;
   return `<div class="mock${night ? ' is-night' : ''}" aria-hidden="true">
   <div class="mock-bar"><span></span><span></span><span></span></div>
   ${rows.map((r, i, a) => row(r, i, a, 'up')).join('')}
@@ -91,5 +91,6 @@ export function appMock({ night = false } = {}) {
   </div>
   ${after.map((r, i, a) => row(r, i, a, 'down')).join('')}
   <div class="m-fab"><small>JEU</small>26</div>
+  <p class="m-toast" aria-hidden="true"></p>
 </div>`;
 }

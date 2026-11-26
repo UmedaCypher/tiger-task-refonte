@@ -61,7 +61,7 @@ export const home = {
   <div class="hero-halo" aria-hidden="true"></div>
   <div class="hero-copy reveal">
     <p class="eyebrow">La to-do list qui te roaste (gentiment)</p>
-    <h1>Arrête de courir après ta liste. Commence à tenir tes journées.</h1>
+    <h1 class="words">Arrête de courir après ta liste. Commence à <mark class="scribble">tenir tes journées.<svg viewBox="0 0 300 20" preserveAspectRatio="none" aria-hidden="true"><path d="M3 14 C 60 4, 120 18, 180 9 S 270 6, 297 12" pathLength="1"/></svg></mark></h1>
     <p class="lead">Une ligne par jour, une couleur par tâche&nbsp;: faite, flemme, abandonnée… ou EPIC FAIL. Le soir, tu assumes, l’app te chambre un peu, et bizarrement, c’est là que tu commences à avancer.</p>
     <div class="cta-row">
       <a class="btn btn-primary btn-lg" href="/app/">Commencer gratuitement</a>
@@ -71,6 +71,13 @@ export const home = {
   </div>
   <div class="hero-mock reveal">${appMock()}</div>
 </section>
+
+<div class="marquee" aria-hidden="true"><div class="track">
+  ${['Trois reports. Elle a emménagé chez toi.', 'EPIC FAIL débloqué. Il fallait oser.', 'Tout est vert. Qui es-tu&nbsp;?', 'Flemme assumée. Demain, promis.', 'EPIC WIN. Champagne (avec modération).', 'Abandonnée. Parfois, lâcher, c’est grandir.', 'Page blanche. Ambitieux.', 'Ce n’est plus de la flemme, c’est de l’art.']
+    .map((l, i) => `<span><i class="d-${'ykgybrwy'[i]}"></i>${l}</span>`)
+    .join('')
+    .repeat(2)}
+</div></div>
 
 <section class="pain">
   <div class="wrap narrow">

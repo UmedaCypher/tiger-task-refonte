@@ -87,7 +87,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
               </button>
             ))}
           </div>
-          <p className="ob-meaning">{MEANING[picked]}</p>
+          <p className="ob-meaning" key={picked}>{MEANING[picked]}</p>
         </div>
       ),
     },

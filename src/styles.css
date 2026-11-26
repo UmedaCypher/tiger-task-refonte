@@ -2018,3 +2018,319 @@ a.btn {
 .switch-row input:checked::after {
   transform: translateX(18px);
 }
+
+/* ======================================================== TYPOGRAPHIE ===
+   Une police d'affichage ronde et joyeuse pour tout ce qui donne le ton. */
+
+:root {
+  --display: 'Bricolage Grotesque Variable', system-ui, sans-serif;
+}
+.brand,
+.lens-head h2,
+.panel-head h2,
+.pw-title,
+.ob-title,
+.today-fab-num,
+.month-name,
+[data-excel='off'] .month-row,
+.verdict,
+.kpi-value,
+.admin-main h2,
+.okr header h3 {
+  font-family: var(--display);
+  font-optical-sizing: auto;
+}
+.lens-head h2 {
+  font-weight: 650;
+  letter-spacing: -0.035em;
+}
+.lens.is-today .lens-head h2 {
+  font-weight: 700;
+}
+.pw-title,
+.ob-title {
+  font-weight: 700;
+  letter-spacing: -0.035em;
+}
+.panel-head h2 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.brand {
+  font-weight: 700;
+}
+[data-excel='off'] .month-row {
+  letter-spacing: 0.06em;
+  font-weight: 700;
+}
+.toast {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 15px;
+}
+[data-excel='on'] .brand,
+[data-excel='on'] .month-name {
+  font-family: inherit;
+}
+
+/* ===================================================== MICRO-INTERACTIONS === */
+
+.fx-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none;
+  overflow: hidden;
+}
+.fx-layer i {
+  position: absolute;
+  display: block;
+}
+.fx-z {
+  position: absolute;
+  font-family: var(--display);
+  font-weight: 800;
+  color: #c99700;
+}
+
+/* la coche se dessine */
+.chip .check,
+.cell .check {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+.fx-green .check,
+.fx-blue .check {
+  animation: draw 0.45s 0.08s var(--ease) both;
+}
+@keyframes draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+
+/* faite : petit rebond satisfaisant */
+.chip.fx-green {
+  animation: pop 0.5s var(--ease);
+}
+@keyframes pop {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.07);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* EPIC WIN : la pastille brille, la lentille s'illumine */
+.chip.fx-blue {
+  animation: win 0.9s var(--ease);
+  position: relative;
+}
+.chip.fx-blue::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.75) 50%, transparent 70%);
+  background-size: 250% 100%;
+  animation: shine 1.1s 0.15s ease-out both;
+  pointer-events: none;
+}
+@keyframes win {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.12) rotate(-1.5deg);
+  }
+  55% {
+    transform: scale(0.97) rotate(1deg);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes shine {
+  from {
+    background-position: 120% 0;
+  }
+  to {
+    background-position: -120% 0;
+  }
+}
+.lens.is-winning {
+  animation: lensGlow 1.4s var(--ease);
+}
+@keyframes lensGlow {
+  30% {
+    box-shadow:
+      0 0 0 2px #3b82f6,
+      0 0 60px -6px rgba(59, 130, 246, 0.55),
+      var(--lens-shadow);
+  }
+}
+
+/* EPIC FAIL : ça tremble */
+.chip.fx-black {
+  animation: fail 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+@keyframes fail {
+  10%,
+  90% {
+    transform: translateX(-1px) rotate(-0.5deg);
+  }
+  20%,
+  80% {
+    transform: translateX(3px) rotate(1deg);
+  }
+  30%,
+  50%,
+  70% {
+    transform: translateX(-6px) rotate(-1.5deg);
+  }
+  40%,
+  60% {
+    transform: translateX(6px) rotate(1.5deg);
+  }
+}
+
+/* Flemme : la pastille s'affaisse, puis se relève mollement */
+.chip.fx-yellow {
+  animation: droop 0.9s var(--ease);
+  transform-origin: left center;
+}
+@keyframes droop {
+  30% {
+    transform: rotate(3deg) translateY(3px) scaleY(0.94);
+  }
+  60% {
+    transform: rotate(-1deg);
+  }
+}
+
+/* Imprévu : un coup de vent */
+.chip.fx-purple {
+  animation: gust 0.7s var(--ease);
+}
+@keyframes gust {
+  35% {
+    transform: translateX(10px) skewX(-6deg);
+  }
+  70% {
+    transform: translateX(-3px) skewX(2deg);
+  }
+}
+
+/* Abandonnée : on raye d'un trait */
+.chip.fx-red .chip-text {
+  text-decoration: none;
+  background: linear-gradient(currentColor, currentColor) 0 55% / 0 1.5px no-repeat;
+  animation: strike 0.5s 0.05s var(--ease) forwards;
+}
+@keyframes strike {
+  to {
+    background-size: 100% 1.5px;
+  }
+}
+
+/* nouvelle tâche : elle pop */
+.chip {
+  animation-timing-function: var(--ease);
+}
+.chips > .chip:not([class*='fx-']) {
+  animation: chipPop 0.45s var(--ease) backwards;
+}
+@keyframes chipPop {
+  from {
+    opacity: 0;
+    transform: scale(0.7) translateY(6px);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+}
+.chip-mark:active,
+.mark:active {
+  transform: scale(0.85);
+}
+.chip-mark,
+.mark {
+  transition: transform 0.15s var(--ease), background 0.15s;
+}
+
+/* barre de la journée : un segment par tâche, coloré par son verdict */
+.lens-bar {
+  display: flex;
+  gap: 3px;
+  height: 5px;
+  margin: -6px 4px 16px;
+}
+.lens-bar .seg {
+  flex: 1;
+  border-radius: 3px;
+  background: var(--dot);
+  transition: background 0.4s var(--ease), transform 0.3s var(--ease);
+}
+.lens-bar .seg.is-white {
+  background: rgba(127, 127, 160, 0.18);
+}
+
+/* le bouton Aujourd'hui appelle quand on s'est éloigné */
+.today-fab {
+  transition: transform 0.3s var(--ease), box-shadow 0.3s;
+}
+.today-fab.is-away {
+  animation: nudge 2.8s var(--ease) infinite;
+  box-shadow:
+    0 0 0 3px var(--accent-tint),
+    0 16px 36px -12px rgba(255, 122, 69, 0.55);
+}
+@keyframes nudge {
+  0%,
+  70%,
+  100% {
+    transform: translateY(0);
+  }
+  78% {
+    transform: translateY(-7px);
+  }
+  86% {
+    transform: translateY(0);
+  }
+  92% {
+    transform: translateY(-3px);
+  }
+}
+
+/* les lignes réagissent au survol */
+[data-excel='off'] .row:not(.lens) .minis {
+  transition: transform 0.25s var(--ease);
+}
+[data-excel='off'] .row:not(.lens):hover .minis {
+  transform: translateX(3px);
+}
+
+/* l'onboarding : les pastilles répondent au doigt */
+.ob-colors .chip {
+  transition: transform 0.2s var(--ease), box-shadow 0.2s;
+}
+.ob-colors .chip:active {
+  transform: scale(0.94);
+}
+.ob-colors .chip.is-picked {
+  transform: translateY(-2px);
+}
+.ob-meaning {
+  animation: chipIn 0.35s var(--ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fx-layer {
+    display: none;
+  }
+}

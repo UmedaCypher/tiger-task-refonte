@@ -64,6 +64,24 @@ export function App() {
   const [toToday, setToToday] = useState(0);
   const [toast, setToast] = useState<string | null>(null);
   const [onboarding, setOnboarding] = useState(needsOnboarding);
+  const [todayAway, setTodayAway] = useState(false);
+
+  // le bouton Aujourd'hui s'anime quand la ligne du jour sort de l'écran
+  useEffect(() => {
+    let raf = 0;
+    const check = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const el = document.querySelector(`[data-day="${todayKey()}"]`);
+        if (!el) return setTodayAway(true);
+        const r = el.getBoundingClientRect();
+        setTodayAway(r.bottom < 0 || r.top > innerHeight);
+      });
+    };
+    addEventListener('scroll', check, { passive: true });
+    check();
+    return () => removeEventListener('scroll', check);
+  }, []);
   const auth = useAuth();
   const pro = isPro(auth);
   const lockBefore = pro ? null : addDays(today, -FREE_DAYS);
@@ -207,7 +225,7 @@ export function App() {
         </p>
       </main>
 
-      <button className="today-fab glass" onClick={goToday} aria-label="Revenir à aujourd’hui">
+      <button className={`today-fab glass ${todayAway ? 'is-away' : ''}`} onClick={goToday} aria-label="Revenir à aujourd’hui">
         <span className="today-fab-wd">{WD_SHORT[new Date().getDay()]}</span>
         <span className="today-fab-num">{new Date().getDate()}</span>
       </button>
