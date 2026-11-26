@@ -7,7 +7,9 @@ import { openPaywall, PaywallHost } from './components/Paywall';
 import { COL_LETTERS, Sheet, useColumns } from './components/Sheet';
 import { Stage } from './components/Stage';
 import { Scene } from './scene/Scene';
-import { addDays, fromKey, todayKey, type DayKey } from './lib/date';
+import { LoginHost, openLogin } from './components/Login';
+import { MonthNav } from './components/MonthNav';
+import { addDays, todayKey, type DayKey } from './lib/date';
 import { captureReferral, claimReferral, startCheckout, takePendingPlan, trackDaily } from './lib/growth';
 import { isPro, onAuth, refreshProfile, useAuth } from './lib/supabase';
 import { onSay } from './lib/roast';
@@ -167,6 +169,13 @@ export function App() {
     };
   }, []);
 
+  /** Aller à un jour : au-delà de la fenêtre gratuite, on propose Pro */
+  const goTo = (d: DayKey) => {
+    if (lockBefore && d < lockBefore) return openPaywall('history');
+    setYear(Number(d.slice(0, 4)));
+    setOpenDay(d);
+  };
+
   const goToday = () => {
     setYear(Number(today.slice(0, 4)));
     setOpenDay(today);
@@ -182,7 +191,7 @@ export function App() {
             <span>Tiger Task</span>
           </div>
           {!prefs.excel ? (
-            <span className="month-label">{fromKey(openDay).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</span>
+            <MonthNav day={openDay} onGo={goTo} />
           ) : (
           <div className="year" role="group" aria-label="Année">
             <button onClick={() => setYear(year - 1)} aria-label="Année précédente">
@@ -195,6 +204,11 @@ export function App() {
           </div>
           )}
           <div className="actions">
+            {auth.ready && !auth.session && (
+              <button className="signin" onClick={() => openLogin()}>
+                Se connecter
+              </button>
+            )}
             <button
               className={`toggle ${prefs.excel ? 'is-on' : ''}`}
               role="switch"
@@ -278,6 +292,7 @@ export function App() {
         </div>
       )}
       <PaywallHost />
+      <LoginHost />
       {onboarding && <Onboarding onDone={() => (setOnboarding(false), setToToday((n) => n + 1))} />}
     </div>
   );

@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { clearExamples, exportJSON } from '../lib/store';
-import { callApi, signInWithEmail, signInWithGoogle, signOut, supabase, useAuth } from '../lib/supabase';
+import { callApi, signOut, supabase, useAuth } from '../lib/supabase';
 import { syncNow, useSyncStatus } from '../lib/sync';
 import { Affiliate } from './Affiliate';
 import { openPaywall } from './Paywall';
+import { openLogin } from './Login';
 
 const SYNC_LABEL: Record<string, string> = {
   off: 'Sur cet appareil uniquement',
@@ -17,10 +18,8 @@ const SYNC_LABEL: Record<string, string> = {
 const PLAN_LABEL = { monthly: 'Pro mensuel', yearly: 'Pro annuel', lifetime: 'Pro à vie' } as const;
 
 export function Account({ onReplayOnboarding, roast, onRoast }: { onReplayOnboarding: () => void; roast: boolean; onRoast: (v: boolean) => void }) {
-  const { session, profile, ready } = useAuth();
+  const { session, profile } = useAuth();
   const sync = useSyncStatus();
-  const [email, setEmail] = useState('');
-  const [sent, setSent] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const install = useInstallPrompt();
@@ -57,30 +56,10 @@ export function Account({ onReplayOnboarding, roast, onRoast }: { onReplayOnboar
             </p>
             {!supabase ? (
               <p className="muted">Les comptes arrivent bientôt.</p>
-            ) : sent ? (
-              <p className="ok">Lien envoyé à {email}. Ouvre-le sur cet appareil pour te connecter.</p>
             ) : (
-              <>
-                <form
-                  className="stack tight"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    run(async () => {
-                      await signInWithEmail(email);
-                      setSent(true);
-                    });
-                  }}
-                >
-                  <input className="field" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="nom@email.fr" aria-label="Email" />
-                  <button className="btn primary" disabled={busy || !ready}>
-                    Créer mon compte ou me connecter
-                  </button>
-                </form>
-                <button className="btn" onClick={() => run(signInWithGoogle)}>
-                  Continuer avec Google
-                </button>
-                <p className="fine-print">Pas de mot de passe : tu reçois un lien de connexion par email.</p>
-              </>
+              <button className="btn primary" onClick={() => openLogin('sync')}>
+                Se connecter ou créer mon compte
+              </button>
             )}
           </>
         ) : (
