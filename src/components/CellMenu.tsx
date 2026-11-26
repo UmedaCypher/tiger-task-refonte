@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { PIGMENT_ORDER, PIGMENTS } from '../lib/pigments';
+import { trackDaily } from '../lib/growth';
 import { deleteTask, editTask, setPigment, useStore } from '../lib/store';
 
 /** Menu d'une cellule : renommer, donner sa couleur, effacer. Popover sur ordinateur, feuille sur mobile. */
@@ -65,6 +66,7 @@ export function CellMenu({ taskId, anchor, onClose }: { taskId: string; anchor: 
                   onClick={() => {
                     editTask(taskId, text);
                     setPigment(taskId, p);
+                    if (p !== 'white') trackDaily('day_colored');
                     onClose();
                   }}
                 >

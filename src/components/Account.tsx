@@ -1,21 +1,22 @@
 import { useEffect, useState } from 'react';
 import { clearExamples, exportJSON } from '../lib/store';
-import { callApi, signInWithEmail, signInWithGoogle, signOut, supabase, SYNC_REQUIRES_PREMIUM, useAuth } from '../lib/supabase';
+import { callApi, signInWithEmail, signInWithGoogle, signOut, supabase, useAuth } from '../lib/supabase';
 import { syncNow, useSyncStatus } from '../lib/sync';
-
-/** Prix affichés — à aligner avec les prix créés dans Stripe */
-const PRICES = { monthly: '3 € / mois', yearly: '24 € / an' };
+import { Affiliate } from './Affiliate';
+import { openPaywall } from './Paywall';
 
 const SYNC_LABEL: Record<string, string> = {
   off: 'Données sur cet appareil uniquement',
-  locked: 'Synchronisation réservée aux abonnés',
+  locked: 'La synchronisation fait partie de Pro',
   idle: 'Synchronisé',
   syncing: 'Synchronisation…',
   error: 'Synchronisation impossible pour l’instant',
   offline: 'Hors ligne. Tout partira au retour du réseau.',
 };
 
-export function Account() {
+const PLAN_LABEL = { monthly: 'Pro mensuel', yearly: 'Pro annuel', lifetime: 'Pro à vie' } as const;
+
+export function Account({ onReplayOnboarding }: { onReplayOnboarding: () => void }) {
   const { session, profile, ready } = useAuth();
   const sync = useSyncStatus();
   const [email, setEmail] = useState('');
@@ -35,11 +36,6 @@ export function Account() {
       setBusy(false);
     }
   };
-  const go = (path: string, body: unknown) =>
-    run(async () => {
-      const { url } = await callApi<{ url: string }>(path, body);
-      window.location.href = url;
-    });
 
   const download = () => {
     const a = document.createElement('a');
@@ -54,8 +50,8 @@ export function Account() {
         {!supabase && <p className="muted">Tes tâches sont enregistrées sur cet appareil et fonctionnent hors ligne.</p>}
         {supabase && ready && !session && (
           <>
-            <h3>Retrouver tes tâches partout</h3>
-            <p className="muted">Connecte-toi pour synchroniser tes appareils. Ce qui est déjà ici est conservé.</p>
+            <h3>Ton compte</h3>
+            <p className="muted">Pour passer à Pro, devenir affilié et retrouver ta feuille sur tous tes appareils. Ce qui est déjà ici est conservé.</p>
             {sent ? (
               <p className="ok">Lien envoyé. Ouvre-le sur cet appareil.</p>
             ) : (
@@ -91,6 +87,11 @@ export function Account() {
                 </button>
               )}
             </p>
+            {profile?.is_admin && (
+              <a className="btn" href="/admin/">
+                Ouvrir le back-office
+              </a>
+            )}
             <button className="btn ghost" onClick={() => signOut()}>
               Se déconnecter
             </button>
@@ -99,36 +100,41 @@ export function Account() {
       </section>
 
       <section className="group">
-        <h3>Abonnement</h3>
+        <h3>Tiger Task Pro</h3>
         {profile?.is_premium ? (
           <>
-            <p className="ok">Abonnement actif. Merci de soutenir Tiger Task.</p>
-            <button className="btn" onClick={() => go('/api/portal', {})} disabled={busy}>
-              Gérer l’abonnement
-            </button>
+            <p className="ok">{PLAN_LABEL[profile.premium_plan ?? 'yearly']} actif. Merci de soutenir Tiger Task.</p>
+            {profile.premium_plan !== 'lifetime' && (
+              <button
+                className="btn"
+                disabled={busy}
+                onClick={() =>
+                  run(async () => {
+                    const { url } = await callApi<{ url: string }>('/api/portal', {});
+                    window.location.href = url;
+                  })
+                }
+              >
+                Gérer mon abonnement
+              </button>
+            )}
           </>
         ) : (
           <>
-            <ul className="bullets">
-              {SYNC_REQUIRES_PREMIUM && <li>Synchronisation sur tous tes appareils</li>}
-              <li>Widgets d’écran d’accueil, dès leur sortie</li>
-              <li>Une app indépendante, sans publicité</li>
-            </ul>
-            {session ? (
-              <div className="stack tight">
-                <button className="btn primary" onClick={() => go('/api/checkout', { plan: 'yearly' })} disabled={busy}>
-                  S’abonner · {PRICES.yearly}
-                </button>
-                <button className="btn" onClick={() => go('/api/checkout', { plan: 'monthly' })} disabled={busy}>
-                  Au mois · {PRICES.monthly}
-                </button>
-              </div>
-            ) : (
-              <p className="muted">Connecte-toi pour t’abonner.</p>
-            )}
+            <p className="muted">Garde toute ton année lisible, vois ton bilan, retrouve ta feuille partout.</p>
+            <button className="btn primary" onClick={() => openPaywall('upgrade')}>
+              Découvrir Pro
+            </button>
           </>
         )}
       </section>
+
+      {session && (
+        <section className="group">
+          <h3>Recommander Tiger Task</h3>
+          <Affiliate />
+        </section>
+      )}
 
       {err && <p className="err">{err}</p>}
 
@@ -141,6 +147,9 @@ export function Account() {
         )}
         <button className="btn" onClick={download}>
           Exporter en JSON
+        </button>
+        <button className="btn ghost" onClick={onReplayOnboarding}>
+          Revoir la présentation
         </button>
         <button className="btn ghost" onClick={clearExamples}>
           Effacer les tâches d’exemple

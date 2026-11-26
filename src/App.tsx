@@ -2,10 +2,16 @@ import { useEffect, useRef, useState } from 'react';
 import { Account } from './components/Account';
 import { Bilan } from './components/Bilan';
 import { Rituals } from './components/Rituals';
+import { needsOnboarding, Onboarding } from './components/Onboarding';
+import { openPaywall, PaywallHost } from './components/Paywall';
 import { COL_LETTERS, Sheet, useColumns } from './components/Sheet';
-import { todayKey, type DayKey } from './lib/date';
-import { refreshProfile } from './lib/supabase';
+import { addDays, todayKey, type DayKey } from './lib/date';
+import { captureReferral, claimReferral, startCheckout, takePendingPlan, trackDaily } from './lib/growth';
+import { isPro, onAuth, refreshProfile, useAuth } from './lib/supabase';
 import { startSync } from './lib/sync';
+
+/** En gratuit : les 30 derniers jours restent nets, les plus anciens sont floutés */
+export const FREE_DAYS = 30;
 
 type PanelId = 'bilan' | 'rituels' | 'compte';
 const WD_SHORT = ['DIM', 'LUN', 'MAR', 'MER', 'JEU', 'VEN', 'SAM'];
@@ -55,6 +61,31 @@ export function App() {
   const [panel, setPanel] = useState<PanelId | null>(null);
   const [toToday, setToToday] = useState(0);
   const [toast, setToast] = useState<string | null>(null);
+  const [onboarding, setOnboarding] = useState(needsOnboarding);
+  const auth = useAuth();
+  const pro = isPro(auth);
+  const lockBefore = pro ? null : addDays(today, -FREE_DAYS);
+
+  // croissance : parrainage, mesure d'usage, reprise d'un achat commencé avant la connexion
+  useEffect(() => {
+    captureReferral();
+    trackDaily('app_open');
+    // arrivée depuis la page Tarifs du site
+    const offre = new URLSearchParams(location.search).get('offre');
+    if (offre) {
+      history.replaceState(null, '', '/app/');
+      setTimeout(() => openPaywall('upgrade'), 400);
+    }
+    const off = onAuth((a) => {
+      if (!a.profile) return;
+      claimReferral();
+      const pending = takePendingPlan();
+      if (pending && !a.profile.is_premium) startCheckout(pending).catch(() => openPaywall('upgrade'));
+    });
+    return () => {
+      off();
+    };
+  }, []);
   const shell = useRef<HTMLDivElement>(null);
   const cols = useColumns(shell);
   const [prefs, setPrefs] = useState<Prefs>(loadPrefs);
@@ -85,7 +116,7 @@ export function App() {
       refreshProfile();
       setTimeout(refreshProfile, 4000);
     }
-    if (q.has('pacte')) window.history.replaceState({}, '', '/');
+    if (q.has('pacte')) window.history.replaceState({}, '', '/app/');
   }, []);
 
   useEffect(() => {
@@ -166,7 +197,7 @@ export function App() {
       </header>
 
       <main>
-        <Sheet year={year} cols={cols} excel={prefs.excel} openDay={openDay} setOpenDay={setOpenDay} scrollToToday={toToday} />
+        <Sheet year={year} cols={cols} excel={prefs.excel} lockBefore={lockBefore} onLocked={() => openPaywall('history')} openDay={openDay} setOpenDay={setOpenDay} scrollToToday={toToday} />
         <p className="credit">
           D’après la méthode de Fibre Tigre : une ligne par jour, une couleur par tâche.
         </p>
@@ -189,15 +220,24 @@ export function App() {
               </button>
             </header>
             <div className="panel-body">
-              {panel === 'bilan' && <Bilan year={year} />}
+              {panel === 'bilan' && <Bilan year={year} locked={!pro} />}
               {panel === 'rituels' && <Rituals />}
-              {panel === 'compte' && <Account />}
+              {panel === 'compte' && (
+                <Account
+                  onReplayOnboarding={() => {
+                    setPanel(null);
+                    setOnboarding(true);
+                  }}
+                />
+              )}
             </div>
           </aside>
         </div>
       )}
 
       {toast && <div className="toast glass">{toast}</div>}
+      <PaywallHost />
+      {onboarding && <Onboarding onDone={() => (setOnboarding(false), setToToday((n) => n + 1))} />}
     </div>
   );
 }

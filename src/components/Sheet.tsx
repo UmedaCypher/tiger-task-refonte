@@ -3,6 +3,7 @@ import { dayOfYear, fromKey, monthName, todayKey, toKey, weekday, type DayKey } 
 import { PIGMENTS } from '../lib/pigments';
 import { byDay } from '../lib/stats';
 import { addTask, materializeRituals, quickComplete, useStore, type Task } from '../lib/store';
+import { trackDaily } from '../lib/growth';
 import { CellMenu } from './CellMenu';
 
 const WD = ['lun', 'mar', 'mer', 'jeu', 'ven', 'sam', 'dim'];
@@ -35,8 +36,12 @@ export function Sheet({
   setOpenDay,
   scrollToToday,
   excel,
+  lockBefore,
+  onLocked,
 }: {
   excel: boolean;
+  lockBefore: DayKey | null;
+  onLocked: () => void;
   year: number;
   cols: number;
   openDay: DayKey;
@@ -91,7 +96,15 @@ export function Sheet({
           <div className="month-row">
             <span className="month-name">{monthName(m)}</span>
           </div>
-          {ds.map((d) => (
+          {ds.map((d) => [
+            lockBefore && d === lockBefore && year === Number(lockBefore.slice(0, 4)) && (
+              <button key={`lock-${d}`} className="frontier" onClick={onLocked}>
+                <span className="frontier-line" aria-hidden="true" />
+                <span className="frontier-text">
+                  Au-dessus, tes jours s’effacent. <strong>Garde toute ton année avec Pro</strong>
+                </span>
+              </button>
+            ),
             <Row
               key={d}
               day={d}
@@ -103,8 +116,10 @@ export function Sheet({
               isPast={d < today}
               onOpen={open}
               onMenu={(id, rect) => setMenu({ id, rect })}
-            />
-          ))}
+              locked={!!lockBefore && d < lockBefore}
+              onLocked={onLocked}
+            />,
+          ])}
         </section>
       ))}
       {menu && <CellMenu taskId={menu.id} anchor={menu.rect} onClose={() => setMenu(null)} />}
@@ -124,7 +139,11 @@ const Row = memo(function Row({
   isPast,
   onOpen,
   onMenu,
+  locked,
+  onLocked,
 }: {
+  locked: boolean;
+  onLocked: () => void;
   day: DayKey;
   tasks: Task[];
   cols: number;
@@ -141,6 +160,26 @@ const Row = memo(function Row({
 
   const date = fromKey(day);
   const label = date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+
+  // ---- Jour hors de la fenêtre gratuite : visible mais flouté, et il ouvre l'offre Pro
+  if (locked) {
+    return (
+      <button className={`${cls} is-locked`} data-day={day} onClick={onLocked} aria-label={`${label} : disponible avec Pro`}>
+        <span className="date">
+          <span className="date-wd">{WD[wd]}</span>
+          <span className="date-num">{date.getDate()}</span>
+        </span>
+        <span className="minis" aria-hidden="true">
+          {tasks.slice(0, cols).map((t) => (
+            <span key={t.id} className={`mini is-${t.pigment}`} style={{ ['--dot' as string]: PIGMENTS[t.pigment].color }}>
+              <i />
+              <span className="mini-text">{t.text}</span>
+            </span>
+          ))}
+        </span>
+      </button>
+    );
+  }
 
   if (!excel) {
     // ---- Focale : le jour ouvert est une lentille, les autres jours une ligne légère
@@ -250,6 +289,7 @@ function Cell({ task, onMenu, compact }: { task: Task; onMenu: (id: string, rect
           onClick={(e) => {
             e.stopPropagation();
             quickComplete(task.id);
+            trackDaily('day_colored');
           }}
         >
           <MarkIcon pigment={task.pigment} />
@@ -327,7 +367,10 @@ function Chip({ task, onMenu }: { task: Task; onMenu: (id: string, rect: DOMRect
       <button
         className="chip-mark"
         aria-label={task.pigment === 'white' ? `Marquer « ${task.text} » comme faite` : `Remettre « ${task.text} » à faire`}
-        onClick={() => quickComplete(task.id)}
+        onClick={() => {
+          quickComplete(task.id);
+          trackDaily('day_colored');
+        }}
       >
         <MarkIcon pigment={task.pigment} />
       </button>

@@ -3,16 +3,25 @@ import { monthName } from '../lib/date';
 import { PIGMENT_ORDER, PIGMENTS } from '../lib/pigments';
 import { bilan } from '../lib/stats';
 import { useStore } from '../lib/store';
+import { openPaywall } from './Paywall';
 
 const pct = (x: number) => `${Math.round(x * 100)} %`;
 
-export function Bilan({ year }: { year: number }) {
+export function Bilan({ year, locked }: { year: number; locked: boolean }) {
   const tasks = useStore((s) => s.tasks);
   const b = useMemo(() => bilan({ tasks } as never, year), [tasks, year]);
   const max = Math.max(1, ...b.months.map((m) => PIGMENT_ORDER.reduce((a, p) => a + m[p], 0)));
 
   return (
-    <div className="stack">
+    <div className={`stack ${locked ? 'is-locked-panel' : ''}`}>
+      {locked && (
+        <div className="locked-cta">
+          <p>Ton bilan te montre ce que tu fais vraiment de ton temps. Il fait partie de Pro.</p>
+          <button className="btn primary" onClick={() => openPaywall('bilan')}>
+            Voir mon bilan
+          </button>
+        </div>
+      )}
       <table className="kv">
         <tbody>
           <tr><th>Tâches en {year}</th><td>{b.total}</td></tr>

@@ -7,3 +7,16 @@ dev-dist
 .wrangler
 *.log
 .DS_Store
+# pages du site générées par site/build.mjs (la source est dans site/)
+web/index.html
+web/404.html
+web/methode/
+web/tarifs/
+web/faq/
+web/blog/
+web/affiliation/
+web/mentions-legales/
+web/cgv/
+web/confidentialite/
+public/sitemap.xml
+public/robots.txt

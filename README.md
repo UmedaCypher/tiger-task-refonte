@@ -1,83 +1,73 @@
-# Tiger Task — le carnet du tigre
+# Tiger Task
 
-> Chaque jour, des tâches. Chaque tâche, une couleur. Chaque année, une tapisserie.
+> Une ligne par jour, une couleur par tâche.
 
-Une app de to-do list inspirée de la méthode d’organisation de **Fibre Tigre** (ses billets « Mon emploi du temps » 2016 → 2019) :
-une liste par jour, et chaque soir un verdict — une couleur par tâche.
+Un seul Worker Cloudflare sert tout :
 
-| Couleur | Nom | Sens |
+| Adresse | Quoi | Source |
 |---|---|---|
-| ⚪ | Page blanche | À faire |
-| 🟢 | Jade | Faite |
-| 🔵 | Azur | Tâche qui traînait, enfin faite |
-| 🟡 | Safran | Reportée à demain, par flemme → **renaît le lendemain** |
-| 🟣 | Améthyste | Reportée, indépendamment de ma volonté → **renaît le lendemain** |
-| 🔴 | Vermillon | Pas faite, par flemme (culpabilité) |
-| ⚫ | Encre | Échec cuisant et triste |
+| `/` | Le site : accueil, méthode, tarifs, FAQ, blog, affiliation, pages légales | `site/` (généré dans `web/`) |
+| `/app/` | L’app (PWA, hors ligne) | `src/` |
+| `/admin/` | Le back-office : revenus, utilisateurs, conversion, affiliés, OKR | `src/admin/` |
+| `/api/*` | Paiement Stripe, affiliation, événements, admin | `worker/` |
+| `/r/<code>` | Lien d’affilié (compte le clic, retient le code 60 jours) | `worker/affiliate.ts` |
 
-## Ce que fait l’app
+Données : Supabase (comptes, synchronisation Pro, paiements, commissions, OKR). Paiement : Stripe.
 
-- **Jour** : la page du jour, un ruban de la semaine, un vers par jour. Toucher un sceau = faite (azur automatiquement si la tâche avait été reportée). Toucher l’intitulé = palette des 7 couleurs, renommer, effacer.
-- **Reports** : safran et améthyste recopient la tâche au lendemain avec son compteur (↷ 2). Revenir sur ce choix efface le report s’il n’a pas été touché.
-- **Verdict** : un bandeau rappelle les journées passées dont des tâches n’ont pas reçu de couleur.
-- **Rituels** : tâches récurrentes par jour de semaine, qui s’inscrivent seules.
-- **Tapisserie** : l’année entière, 12 rangs × 31 jours, chaque jour tissé des couleurs de ses tâches (la vue « Excel » de Fibre Tigre).
-- **Bilan** : taux d’accomplissement, indice de flemme (safran + vermillon), séries, mois par mois, et ta Némésis (la tâche la plus reportée).
-- **Compte** : connexion Supabase (lien magique ou Google), synchronisation, Pacte du Tigre (abonnement Stripe), export JSON.
-- **PWA** : installable sur iOS/Android, fonctionne hors ligne (polices embarquées).
+## Offres
 
-## Architecture
+| | Prix TTC | Notes |
+|---|---|---|
+| Gratuit | 0 € | Toute la méthode ; les 30 derniers jours restent nets, les plus anciens sont floutés |
+| Pro mensuel | 3,99 € | |
+| Pro annuel | 29,90 € | Offre de rattrapage unique : 19,90 € la 1re année si on refuse l’offre |
+| Pro à vie | 79,90 € | 59,90 € « Fondateurs » pour les 500 premiers |
 
+Pro = tout l’historique, le bilan, la synchronisation, les futurs widgets.
+
+**Affiliation** : 7 € par abonnement annuel (1re année seulement), 15 € par offre à vie, payables 30 jours après le paiement, virement dès 20 €. La personne recommandée a 30 jours offerts (mensuel et annuel) ou −10 % (à vie). Rien sur le mensuel, sauf passage à l’annuel dans les 60 jours. Les règles sont dans `worker/shared.ts` (`RULES`).
+
+## Mise en route
+
+### 1. Supabase
+1. SQL Editor → coller `supabase/migrations/0001_init.sql` → Run (déjà fait si tu l’as passé).
+2. SQL Editor → coller `supabase/migrations/0002_business.sql` → Run.
+3. Te donner l’accès admin (remplace l’email, après t’être connecté une fois à l’app) :
+   `update public.profiles set is_admin = true where id = (select id from auth.users where email = 'ton@email.fr');`
+4. Authentication → URL Configuration : *Site URL* = ton adresse, et dans *Redirect URLs* ajoute `https://<ton-adresse>/app/` et `https://<ton-adresse>/admin/`.
+
+### 2. Stripe
+```bash
+STRIPE_SECRET_KEY=sk_test_... APP_URL=https://<ton-adresse> npm run stripe:setup
 ```
-Cloudflare Pages  ──  front statique (Vite + React + TS, PWA)
-   └─ functions/api/   Pages Functions : checkout, portal, stripe-webhook (Stripe en REST, sans SDK)
-Supabase           ──  Auth + Postgres (tables tasks, rituals, profiles, RLS par utilisateur)
-```
+Le script crée le produit, les 4 prix, les 2 coupons et le webhook, et affiche les variables à copier. Active aussi le portail client (Stripe › Settings › Billing › Customer portal). Refais-le avec la clé `sk_live_` le jour du lancement.
 
-- **Local-first** : tout s’écrit d’abord dans le navigateur (`src/lib/store.ts`). Sans Supabase configuré, l’app est 100 % locale.
-- **Sync** (`src/lib/sync.ts`) : pousse les éléments modifiés, tire ce qui a changé côté serveur (`synced_at` horodaté par Postgres). Conflits : la modification la plus récente gagne (aussi garanti par un trigger SQL).
+### 3. Cloudflare (Workers & Pages › tiger-task › Settings)
+- **Build › Variables** (lues au build) : `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`. Supprime `VITE_SYNC_REQUIRES_PREMIUM` (remplacée : la synchronisation fait partie de Pro).
+- **Variables and secrets** (lues par le Worker) :
+  - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (secret)
+  - `STRIPE_SECRET_KEY` (secret), `STRIPE_WEBHOOK_SECRET` (secret)
+  - `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_YEARLY`, `STRIPE_PRICE_LIFETIME`, `STRIPE_PRICE_LIFETIME_FOUNDER`
+  - `STRIPE_COUPON_DOWNSELL`, `STRIPE_COUPON_LIFETIME_REF`
+  - `APP_URL` (ton adresse), `STRIPE_TAX` = `on` pour laisser Stripe calculer la TVA du pays de l’acheteur
 
-## Démarrer en local
+### 4. Le site
+- Textes : `site/pages.mjs`. Nouvel article de blog : un fichier `.md` dans `site/blog/` (en-tête `title`, `description`, `date`).
+- Domaine définitif : `SITE.url` dans `site/layout.mjs`.
+- À compléter avant le lancement : les `[CROCHETS]` des pages légales (éditeur, SIREN, email de contact) et la FAQ, à faire relire.
 
+## Développement
 ```bash
 npm install
-cp .env.example .env.local     # optionnel : clés Supabase
-npm run dev                    # http://localhost:5173
+npm run dev        # site + app + admin sur http://localhost:5173 (sans l’API)
+npm run worker:dev # tout, avec l’API (après npm run build, secrets dans .dev.vars)
+npm run build
 ```
 
-Pour tester aussi les fonctions Stripe : `cp .dev.vars.example .dev.vars`, puis `npm run build && npm run pages:dev`.
-
-## Mise en place Supabase
-
-1. Créer un projet sur supabase.com.
-2. SQL Editor → coller `supabase/migrations/0001_init.sql` → Run.
-3. Authentication → URL Configuration : ajouter l’URL Cloudflare Pages (et `http://localhost:5173`) en *Redirect URLs*.
-4. (Optionnel) Authentication → Providers → Google.
-5. Récupérer `Project URL` et `anon key` → `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`.
-
-## Mise en place Stripe (Pacte du Tigre)
-
-1. Créer un produit avec deux prix récurrents (mensuel, annuel) → `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_YEARLY`.
-2. Webhook vers `https://<ton-domaine>/api/stripe-webhook`, événements : `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted` → `STRIPE_WEBHOOK_SECRET`.
-3. Activer le portail client (Settings → Billing → Customer portal).
-4. Les prix affichés sont dans `src/components/Account.tsx` (`PRICES`).
-5. `VITE_SYNC_REQUIRES_PREMIUM=true` réserve la synchronisation aux abonnés.
-
-## Déploiement Cloudflare Pages
-
-Dashboard → Workers & Pages → Create → Pages → connecter ce dépôt GitHub :
-
-- Build command : `npm run build`
-- Output directory : `dist`
-- Variables (Production) :
-  - `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_SYNC_REQUIRES_PREMIUM`
-  - Secrets : `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_YEARLY`, `APP_URL`
-
-Chaque push sur `main` redéploie ; chaque branche a son URL de prévisualisation.
+## Mesure
+Événements anonymes (`/api/event`) : ouverture de l’app (1 par jour et par appareil), journée colorée, onboarding, paywall, offre de rattrapage. Jamais le contenu des tâches. Le back-office calcule les métriques depuis ces événements, les profils et les paiements.
 
 ## Feuille de route
-
-- [ ] Widgets d’écran d’accueil : emballer l’app avec **Capacitor**, puis widget natif (iOS WidgetKit / Android Glance) qui lit les tâches du jour depuis Supabase.
-- [ ] Notifications du soir (« l’heure du verdict »).
-- [ ] Réordonner les tâches par glisser-déposer.
-- [ ] Export de la tapisserie en image.
+- [ ] Widgets d’écran d’accueil (Capacitor + WidgetKit / Glance)
+- [ ] Notification du soir (« l’heure du verdict »)
+- [ ] Versements automatiques aux affiliés (Stripe Connect) quand le volume le justifie
