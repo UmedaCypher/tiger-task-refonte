@@ -149,3 +149,17 @@ export function freedomLine(tasks: Task[], day: DayKey, today: DayKey): string {
   if (left > 0) return `Encore ${left} et tu es libre.`;
   return 'Libre ! Va scroller, tu l’as mérité.';
 }
+
+/** Ce que dit le tigre, depuis son rocher */
+export function tigerLine(tasks: Task[]): string {
+  const n = tasks.length;
+  const judged = tasks.filter((t) => t.pigment !== 'white').length;
+  const left = n - judged;
+  if (!n) return 'Zzz… Écris ta première tâche, je fais la sieste en attendant.';
+  if (!left) return tasks.some((t) => t.pigment === 'blue') ? 'EPIC WIN ! Je n’ai jamais autant sauté.' : 'Libre ! Je t’ai gardé une place sur le canapé.';
+  if (judged === 0) return n > 12 ? `Zzz… ${n} tâches ? Réveille-moi quand tu auras commencé.` : 'Zzz… Coche une tâche, ça me réveillera peut-être.';
+  if (judged / n < 0.3) return 'Mmh ? Ah, tu as commencé. Continue, je t’observe.';
+  if (left === 1) return 'Plus qu’une. Je sens déjà le canapé d’ici.';
+  if (judged / n < 0.7) return 'Tu avances. Je fais semblant de ne pas regarder.';
+  return `Encore ${left}. Je m’étire, on y est presque.`;
+}

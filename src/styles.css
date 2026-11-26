@@ -2488,7 +2488,6 @@ html[data-excel='off'] body {
   align-items: center;
   gap: 10px;
 }
-.st-pill,
 .st-nav {
   width: 32px;
   height: 32px;
@@ -2599,6 +2598,155 @@ html[data-excel='off'] body {
   .st-lens.is-free .st-fill {
     animation: none;
   }
+}
+.st-pill.is-today {
+  color: var(--accent-ink);
+}
+
+/* ============================================================ DÉCOR ===
+   Le paysage low poly occupe tout l'écran ; le contenu se pose à gauche,
+   sur un voile de lumière, et la droite reste libre pour respirer. */
+
+.scene {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+.sky {
+  position: absolute;
+  inset: 0;
+  transition: opacity 1.6s var(--ease);
+}
+.sky-dawn {
+  background:
+    radial-gradient(40% 30% at 16% 10%, rgba(255, 255, 255, 0.75), transparent 70%),
+    linear-gradient(180deg, #b4cdee 0%, #e9cdd6 34%, #f6d3c6 58%, #f3d3c6 100%);
+}
+.sky-gold {
+  background: linear-gradient(180deg, #f3d9b2 0%, #f8cf9c 40%, #f6d2a2 70%, #f6d2a2 100%);
+}
+[data-theme='night'] .sky-dawn {
+  background:
+    radial-gradient(50% 35% at 100% 20%, rgba(120, 140, 255, 0.28), transparent 70%),
+    linear-gradient(180deg, #171a33 0%, #2a2146 45%, #4a2e4f 75%, #4a2e4f 100%);
+}
+.sky-sun {
+  position: absolute;
+  right: 12%;
+  top: 6vh;
+  width: 34vh;
+  height: 34vh;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff8e6 0 26%, rgba(255, 232, 180, 0.7) 44%, transparent 70%);
+  transition: transform 1.6s var(--ease);
+}
+[data-theme='night'] .sky-sun {
+  background: radial-gradient(circle, #fff6e0 0 14%, rgba(255, 240, 210, 0.25) 26%, transparent 60%);
+  transform: none !important;
+}
+.scene-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 1.2s var(--ease);
+}
+.scene.is-ready .scene-canvas {
+  opacity: 1;
+}
+.tiger-bubble-anchor {
+  position: absolute;
+  left: 0;
+  top: 0;
+  will-change: transform;
+}
+.tiger-bubble {
+  position: absolute;
+  bottom: 0;
+  left: -18px;
+  width: max-content;
+  max-width: 240px;
+  padding: 11px 14px;
+  border-radius: 18px 18px 18px 4px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 16px 32px -16px rgba(80, 40, 60, 0.5);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: #1f2330;
+  animation: bubbleIn 0.5s var(--ease) both;
+}
+@keyframes bubbleIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
+}
+.scene:not(.is-ready) .tiger-bubble {
+  display: none;
+}
+@media (max-width: 999px) {
+  .tiger-bubble-anchor {
+    display: none;
+  }
+}
+
+/* le voile qui garde la colonne lisible, sans dessiner de bloc */
+.scene-veil {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(70% 75% at 22% 52%, rgba(255, 250, 244, 0.7), rgba(255, 250, 244, 0.38) 55%, transparent 82%);
+}
+[data-theme='night'] .scene-veil {
+  background: radial-gradient(70% 75% at 22% 52%, rgba(23, 26, 51, 0.72), rgba(23, 26, 51, 0.4) 55%, transparent 82%);
+}
+
+/* alignement à gauche */
+.stage {
+  max-width: 780px;
+  margin: 0 0 0 clamp(16px, 6vw, 96px);
+}
+.st-lens.lens {
+  align-items: flex-start;
+  text-align: left;
+  padding-left: 18px;
+}
+.st-lens.lens::before {
+  display: none;
+}
+.st-chips {
+  justify-content: flex-start;
+}
+.st-msg {
+  font-size: clamp(28px, 3.6vw, 44px);
+}
+.st-gauge {
+  width: min(600px, 100%);
+}
+@media (max-width: 899px) {
+  .stage {
+    margin: 0 auto;
+  }
+  .scene-veil {
+    background: linear-gradient(180deg, rgba(255, 250, 244, 0.55), rgba(255, 250, 244, 0.7));
+  }
+  [data-theme='night'] .scene-veil {
+    background: linear-gradient(180deg, rgba(23, 26, 51, 0.55), rgba(23, 26, 51, 0.7));
+  }
+}
+.st-pill {
+  flex: none;
+  white-space: nowrap;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.85);
 }
 .st-pill.is-today {
   color: var(--accent-ink);

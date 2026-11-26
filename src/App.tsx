@@ -6,6 +6,7 @@ import { needsOnboarding, Onboarding } from './components/Onboarding';
 import { openPaywall, PaywallHost } from './components/Paywall';
 import { COL_LETTERS, Sheet, useColumns } from './components/Sheet';
 import { Stage } from './components/Stage';
+import { Scene } from './scene/Scene';
 import { addDays, fromKey, todayKey, type DayKey } from './lib/date';
 import { captureReferral, claimReferral, startCheckout, takePendingPlan, trackDaily } from './lib/growth';
 import { isPro, onAuth, refreshProfile, useAuth } from './lib/supabase';
@@ -232,6 +233,7 @@ export function App() {
         </main>
       ) : (
         <main className="stage-main">
+          <Scene night={mode === 'night'} />
           <Stage openDay={openDay} setOpenDay={setOpenDay} lockBefore={lockBefore} onLocked={() => openPaywall('history')} />
         </main>
       )}
