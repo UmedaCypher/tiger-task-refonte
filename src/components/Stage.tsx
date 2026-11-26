@@ -21,7 +21,9 @@ export function Stage({
   setOpenDay,
   lockBefore,
   onLocked,
+  children,
 }: {
+  children?: React.ReactNode;
   openDay: DayKey;
   setOpenDay: (d: DayKey) => void;
   lockBefore: DayKey | null;
@@ -156,6 +158,7 @@ export function Stage({
       <Lens day={openDay} tasks={dayTasks} today={today} onStep={step} onMenu={(id, rect) => setMenu({ id, rect })} />
       <div className="st-below">{below.map((d, i) => row(d, i + 1))}</div>
       {menu && <CellMenu taskId={menu.id} anchor={menu.rect} onClose={() => setMenu(null)} />}
+      {children}
     </div>
   );
 }

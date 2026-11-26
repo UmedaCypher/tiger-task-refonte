@@ -120,10 +120,11 @@ if (heroCanvas && demo) {
   const bar = demo.querySelector<HTMLElement>('.day-gauge i')!;
   const legend = demo.querySelectorAll<HTMLElement>('.day-legend span');
   const hint = demo.querySelector<HTMLElement>('.day-hint');
-  const say = document.querySelector<HTMLElement>('.tiger-say');
-  const bubble = document.querySelector<HTMLElement>('.tiger-say .tiger-bubble');
+  const bubble = document.querySelector<HTMLElement>('.hero-mascot .tiger-bubble');
+  const mascotCanvas = document.querySelector<HTMLCanvasElement>('.hero-mascot-canvas');
   const done = new Set<number>();
-  let world: { setState(s: { progress: number; mood: 'sleep' | 'awake' | 'free'; night: boolean }): void; perk(): void; onBubble(cb: (x: number, y: number) => void): void } | null = null;
+  let world: { setState(s: { progress: number; mood: 'sleep' | 'awake' | 'free'; night: boolean }): void } | null = null;
+  let mascot: { setMood(m: 'sleep' | 'awake' | 'free'): void; perk(): void } | null = null;
 
   const render = () => {
     const n = chips.length;
@@ -159,7 +160,9 @@ if (heroCanvas && demo) {
         bubble.classList.add('is-pop');
       }
     }
-    world?.setState({ progress: r, mood: k === n ? 'free' : r >= 0.3 ? 'awake' : 'sleep', night: false });
+    const mood = k === n ? 'free' : r >= 0.3 ? 'awake' : 'sleep';
+    world?.setState({ progress: r, mood, night: false });
+    mascot?.setMood(mood);
   };
 
   let auto: ReturnType<typeof setInterval> | null = null;
@@ -171,7 +174,7 @@ if (heroCanvas && demo) {
       if (done.has(i)) done.delete(i);
       else {
         done.add(i);
-        world?.perk();
+        mascot?.perk();
       }
       render();
     }),
@@ -185,25 +188,30 @@ if (heroCanvas && demo) {
             done.clear();
           } else {
             done.add(done.size);
-            world?.perk();
+            mascot?.perk();
           }
           render();
         }, 3200);
     }, 5000);
   }
 
-  // le décor arrive après le texte : la page reste instantanée
+  // le décor et la mascotte arrivent après le texte : la page reste instantanée
   setTimeout(() => {
     import('../scene/world')
       .then(({ createWorld }) => {
-        world = createWorld(heroCanvas, { reduced: reduce });
-        world.onBubble((x, y) => {
-          if (say) say.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
-        });
+        world = createWorld(heroCanvas, { reduced: reduce, biome: (new URLSearchParams(location.search).get('biome') ?? 'lac') as never });
         document.querySelector('.hero-scene')?.classList.add('is-ready');
         render();
       })
       .catch(() => {});
+    if (mascotCanvas)
+      import('../scene/mascot')
+        .then(({ createMascot }) => {
+          mascot = createMascot(mascotCanvas, { reduced: reduce });
+          document.querySelector('.hero-mascot')?.classList.add('is-ready');
+          render();
+        })
+        .catch(() => {});
   }, 120);
   render();
 }

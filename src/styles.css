@@ -3004,3 +3004,90 @@ html[data-excel='off'] body {
     display: none;
   }
 }
+
+/* ========================================================== MASCOTTE ===
+   La tête du tigre vit dans l'interface, à droite de la liste, au-dessus du décor. */
+
+.tiger-bubble-anchor {
+  display: none;
+}
+.stage {
+  position: relative;
+}
+.mascot {
+  position: absolute;
+  z-index: 5;
+  top: 50%;
+  left: calc(100% + 8px);
+  width: max-content;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+.mascot-canvas {
+  width: 210px;
+  height: 210px;
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
+  filter: drop-shadow(0 18px 24px rgba(90, 50, 30, 0.22));
+}
+.mascot.is-ready .mascot-canvas {
+  opacity: 1;
+  transform: none;
+}
+.mascot-bubble {
+  position: relative;
+  width: max-content;
+  max-width: 250px;
+  margin: 0 0 40px;
+  padding: 14px 18px;
+  border-radius: 22px 22px 22px 6px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 18px 34px -18px rgba(80, 40, 60, 0.5);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.38;
+  color: #1f2330;
+  animation: bubbleIn 0.5s var(--ease) both;
+}
+.mascot:not(.is-ready) .mascot-bubble {
+  visibility: hidden;
+}
+[data-theme='night'] .mascot-bubble {
+  background: rgba(36, 32, 64, 0.94);
+  color: #f1eef8;
+}
+/* écran moyen : la tête se cale en bas à droite, au-dessus du bouton Aujourd'hui */
+@media (max-width: 1239px) {
+  .mascot {
+    position: fixed;
+    top: auto;
+    left: auto;
+    right: 16px;
+    bottom: calc(env(safe-area-inset-bottom) + 92px);
+    transform: none;
+    flex-direction: row-reverse;
+  }
+  .mascot-canvas {
+    width: 130px;
+    height: 130px;
+  }
+  .mascot-bubble {
+    max-width: 210px;
+    margin: 0 0 30px;
+    border-radius: 22px 22px 6px 22px;
+    font-size: 14px;
+  }
+}
+@media (max-width: 639px) {
+  .mascot-canvas {
+    width: 96px;
+    height: 96px;
+  }
+  .mascot-bubble {
+    display: none;
+  }
+}

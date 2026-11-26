@@ -62,7 +62,6 @@ export const home = {
     <div class="hero-sky"></div>
     <canvas class="hero-canvas"></canvas>
     <div class="hero-veil"></div>
-    <div class="tiger-say"><p class="tiger-bubble">Zzz… Coche une tâche, ça me réveillera peut-être.</p></div>
   </div>
   <div class="hero-inner">
     <div class="hero-copy">
@@ -75,7 +74,13 @@ export const home = {
       </div>
       <p class="fine">Gratuit, sans carte bancaire. Parfait comme page d’accueil de ton navigateur.</p>
     </div>
-    <div class="hero-demo">${dayCard({ live: true })}</div>
+    <div class="hero-demo">
+      ${dayCard({ live: true })}
+      <div class="hero-mascot" aria-label="Le tigre">
+        <canvas class="hero-mascot-canvas" aria-hidden="true"></canvas>
+        <p class="tiger-bubble" role="status">Zzz… Coche une tâche, ça me réveillera peut-être.</p>
+      </div>
+    </div>
   </div>
 </section>
 
