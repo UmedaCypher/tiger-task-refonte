@@ -110,3 +110,100 @@ document.querySelectorAll<HTMLElement>('.hero-mock .mock').forEach((mock) => {
     if (!document.hidden) timer = setInterval(tick, 2600);
   });
 });
+
+// ---- Accueil : le décor 3D, le tigre, et la démo qui le réveille
+const heroCanvas = document.querySelector<HTMLCanvasElement>('.hero-canvas');
+const demo = document.querySelector<HTMLElement>('.day.is-live');
+if (heroCanvas && demo) {
+  const chips = [...demo.querySelectorAll<HTMLButtonElement>('.day-chip')];
+  const msg = demo.querySelector<HTMLElement>('.day-msg')!;
+  const bar = demo.querySelector<HTMLElement>('.day-gauge i')!;
+  const legend = demo.querySelectorAll<HTMLElement>('.day-legend span');
+  const hint = demo.querySelector<HTMLElement>('.day-hint');
+  const say = document.querySelector<HTMLElement>('.tiger-say');
+  const bubble = document.querySelector<HTMLElement>('.tiger-say .tiger-bubble');
+  const done = new Set<number>();
+  let world: { setState(s: { progress: number; mood: 'sleep' | 'awake' | 'free'; night: boolean }): void; perk(): void; onBubble(cb: (x: number, y: number) => void): void } | null = null;
+
+  const render = () => {
+    const n = chips.length;
+    const k = done.size;
+    const r = k / n;
+    const left = n - k;
+    chips.forEach((c, i) => {
+      const on = done.has(i);
+      const win = on && i === n - 1;
+      c.className = `day-chip c-${on ? (win ? 'b' : 'g') : 'w'}`;
+      c.querySelector('i')!.textContent = on ? '✓' : '';
+      c.setAttribute('aria-pressed', String(on));
+    });
+    msg.textContent =
+      r === 0 ? 'Une journée neuve. Plus vite tu t’y mets, plus vite tu es libre.'
+      : r < 0.4 ? 'C’est parti. TikTok peut attendre un peu.'
+      : r < 0.7 ? 'À mi-chemin. Ton canapé commence à t’appeler.'
+      : r < 1 ? 'Plus qu’une. La liberté est juste là.'
+      : 'Libre ! Va scroller, tu l’as mérité.';
+    bar.style.width = `${Math.round(r * 100)}%`;
+    legend[0].textContent = `${k} sur ${n} · ${Math.round(r * 100)} %`;
+    legend[1].textContent = left ? `Liberté dans ${left} tâche${left > 1 ? 's' : ''}` : 'Liberté débloquée';
+    if (bubble) {
+      const line =
+        k === 0 ? 'Zzz… Coche une tâche, ça me réveillera peut-être.'
+        : r < 0.5 ? 'Mmh ? Ah, tu as commencé. Continue, je t’observe.'
+        : r < 1 ? 'Tu avances. Je fais semblant de ne pas regarder.'
+        : 'EPIC WIN ! Je t’ai gardé une place sur le canapé.';
+      if (bubble.textContent !== line) {
+        bubble.textContent = line;
+        bubble.classList.remove('is-pop');
+        void bubble.offsetWidth;
+        bubble.classList.add('is-pop');
+      }
+    }
+    world?.setState({ progress: r, mood: k === n ? 'free' : r >= 0.3 ? 'awake' : 'sleep', night: false });
+  };
+
+  let auto: ReturnType<typeof setInterval> | null = null;
+  const stopAuto = () => auto && (clearInterval(auto), (auto = null));
+  chips.forEach((c, i) =>
+    c.addEventListener('click', () => {
+      stopAuto();
+      hint?.remove();
+      if (done.has(i)) done.delete(i);
+      else {
+        done.add(i);
+        world?.perk();
+      }
+      render();
+    }),
+  );
+  // sans interaction, la démo se joue toute seule
+  if (!reduce) {
+    setTimeout(() => {
+      if (auto === null && done.size === 0)
+        auto = setInterval(() => {
+          if (done.size === chips.length) {
+            done.clear();
+          } else {
+            done.add(done.size);
+            world?.perk();
+          }
+          render();
+        }, 3200);
+    }, 5000);
+  }
+
+  // le décor arrive après le texte : la page reste instantanée
+  setTimeout(() => {
+    import('../scene/world')
+      .then(({ createWorld }) => {
+        world = createWorld(heroCanvas, { reduced: reduce });
+        world.onBubble((x, y) => {
+          if (say) say.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+        });
+        document.querySelector('.hero-scene')?.classList.add('is-ready');
+        render();
+      })
+      .catch(() => {});
+  }, 120);
+  render();
+}

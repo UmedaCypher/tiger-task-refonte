@@ -94,3 +94,40 @@ export function appMock({ night = false } = {}) {
   <p class="m-toast" aria-hidden="true"></p>
 </div>`;
 }
+
+/** La mascotte : une tête de tigre à facettes, en SVG (avatar des bulles) */
+export function tigerHead(size = 44) {
+  return `<svg class="tiger-head" viewBox="0 0 64 64" width="${size}" height="${size}" aria-hidden="true">
+  <path d="M10 6 22 14 12 24Z" fill="#2a1b16"/><path d="M13 11 20 15 14 21Z" fill="#f6efe6"/>
+  <path d="M54 6 42 14 52 24Z" fill="#2a1b16"/><path d="M51 11 44 15 50 21Z" fill="#f6efe6"/>
+  <path d="M32 8 52 18 58 36 48 52 32 58 16 52 6 36 12 18Z" fill="#ee8a3a"/>
+  <path d="M32 8 52 18 32 30Z" fill="#f29a4c"/><path d="M32 8 12 18 32 30Z" fill="#e47e30"/>
+  <path d="M12 18 6 36 20 34Z" fill="#d9702a"/><path d="M52 18 58 36 44 34Z" fill="#e88536"/>
+  <path d="M6 36 16 52 24 42Z" fill="#f6efe6"/><path d="M58 36 48 52 40 42Z" fill="#efe4d6"/>
+  <path d="M24 42 32 58 40 42 32 46Z" fill="#f6efe6"/><path d="M16 52 32 58 24 42Z" fill="#efe4d6"/><path d="M48 52 32 58 40 42Z" fill="#f6efe6"/>
+  <path d="M29 9 32 20 35 9Z" fill="#2a1b16"/><path d="M22 12 26 21 27 12Z" fill="#2a1b16"/><path d="M42 12 38 21 37 12Z" fill="#2a1b16"/>
+  <path d="M7 30 15 31 9 26Z" fill="#2a1b16"/><path d="M57 30 49 31 55 26Z" fill="#2a1b16"/>
+  <path class="tiger-eye" d="M20 30 27 28 26 33 21 33Z" fill="#2a1b16"/><path class="tiger-eye" d="M44 30 37 28 38 33 43 33Z" fill="#2a1b16"/>
+  <path d="M28 38 36 38 32 43Z" fill="#b96a62"/>
+</svg>`;
+}
+
+/** La journée façon Aube : grand message, jauge de liberté, tâches (interactive dans l'accueil) */
+export function dayCard({ night = false, live = false } = {}) {
+  const tasks = live
+    ? [['w', 'Répondre au mail qui fait peur'], ['w', 'Sport 30 min'], ['w', 'Relire le contrat'], ['w', 'Mettre le site en ligne']]
+    : [['g', 'Préparer la réunion'], ['g', 'Sport 30 min'], ['y', 'Mail qui fait peur ↻3'], ['k', 'Impôts en ligne'], ['b', 'Mettre le site en ligne']];
+  const mark = { g: '✓', b: '✓', y: '→', k: '×', w: '' };
+  const judged = tasks.filter(([c]) => c !== 'w').length;
+  const pct = Math.round((judged / tasks.length) * 100);
+  return `<div class="day${night ? ' is-night' : ''}${live ? ' is-live' : ''}" ${live ? '' : 'aria-hidden="true"'}>
+  <p class="day-date">Jeudi 26 novembre</p>
+  <p class="day-msg">${live ? 'Une journée neuve. Plus vite tu t’y mets, plus vite tu es libre.' : 'Journée close. Un EPIC FAIL, un EPIC WIN : journée intense.'}</p>
+  <div class="day-gauge"><i style="width:${pct}%"></i></div>
+  <p class="day-legend"><span>${judged} sur ${tasks.length} · ${pct} %</span><span>${live ? 'Liberté dans 4 tâches' : 'Liberté débloquée'}</span></p>
+  <div class="day-chips">${tasks
+    .map(([c, t], i) => (live ? `<button type="button" class="day-chip c-${c}" data-i="${i}"><i>${mark[c]}</i>${t}</button>` : `<span class="day-chip c-${c}"><i>${mark[c]}</i>${t}</span>`))
+    .join('')}</div>
+  ${live ? '<p class="day-hint">Coche une tâche : le tigre se réveille.</p>' : ''}
+</div>`;
+}

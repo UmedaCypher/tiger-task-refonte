@@ -1,5 +1,5 @@
 // Contenu des pages du site. Ton : on part de la douleur, on vend la transformation, jamais la fonctionnalité.
-import { appMock } from './layout.mjs';
+import { dayCard, tigerHead } from './layout.mjs';
 
 const colors = [
   ['g', 'Faite', 'C’est fait. Bravo, champion.'],
@@ -57,19 +57,26 @@ export const home = {
   description:
     'Arrête de courir après ta to-do list. Tiger Task : une ligne par jour, une couleur par tâche, et le soir tu sais enfin ce que tu as fait de ta journée.',
   body: `
-<section class="hero">
-  <div class="hero-halo" aria-hidden="true"></div>
-  <div class="hero-copy reveal">
-    <p class="eyebrow">La to-do list qui te roaste (gentiment)</p>
-    <h1 class="words">Arrête de courir après ta liste. Commence à <mark class="scribble">tenir tes journées.<svg viewBox="0 0 300 20" preserveAspectRatio="none" aria-hidden="true"><path d="M3 14 C 60 4, 120 18, 180 9 S 270 6, 297 12" pathLength="1"/></svg></mark></h1>
-    <p class="lead">Une ligne par jour, une couleur par tâche&nbsp;: faite, flemme, abandonnée… ou EPIC FAIL. Le soir, tu assumes, l’app te chambre un peu, et bizarrement, c’est là que tu commences à avancer.</p>
-    <div class="cta-row">
-      <a class="btn btn-primary btn-lg" href="/app/">Commencer gratuitement</a>
-      <a class="btn btn-ghost btn-lg" href="#comment">Voir comment ça marche</a>
-    </div>
-    <p class="fine">Gratuit, sans carte bancaire. Fonctionne même hors ligne.</p>
+<section class="hero hero-3d">
+  <div class="hero-scene" aria-hidden="true">
+    <div class="hero-sky"></div>
+    <canvas class="hero-canvas"></canvas>
+    <div class="hero-veil"></div>
+    <div class="tiger-say"><p class="tiger-bubble">Zzz… Coche une tâche, ça me réveillera peut-être.</p></div>
   </div>
-  <div class="hero-mock reveal">${appMock()}</div>
+  <div class="hero-inner">
+    <div class="hero-copy">
+      <p class="eyebrow">La to-do list qui te roaste (gentiment)</p>
+      <h1 class="words">Fais ta journée. <mark class="scribble">Puis sois libre.<svg viewBox="0 0 300 20" preserveAspectRatio="none" aria-hidden="true"><path d="M3 14 C 60 4, 120 18, 180 9 S 270 6, 297 12" pathLength="1"/></svg></mark></h1>
+      <p class="lead">Une ligne par jour, une couleur par tâche. Un tigre qui dort tant que tu procrastines, et qui te chambre quand tu reportes. Plus vite tu finis, plus vite tu vas scroller l’esprit tranquille.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary btn-lg" href="/app/">Commencer gratuitement</a>
+        <a class="btn btn-ghost btn-lg" href="#comment">Comment ça marche</a>
+      </div>
+      <p class="fine">Gratuit, sans carte bancaire. Parfait comme page d’accueil de ton navigateur.</p>
+    </div>
+    <div class="hero-demo">${dayCard({ live: true })}</div>
+  </div>
 </section>
 
 <div class="marquee" aria-hidden="true"><div class="track">
@@ -89,7 +96,7 @@ export const home = {
       <li class="reveal">Le soir, tu as été occupé toute la journée. À quoi&nbsp;? Mystère.</li>
       <li class="reveal">Tu as testé dix applis d’organisation. Surtout, tu as organisé des applis.</li>
     </ul>
-    <p class="pain-turn reveal">Le problème n’est pas ta motivation. C’est que personne ne te dit la vérité sur tes journées. Nous, si. Avec tendresse.</p>
+    <p class="pain-turn reveal"><span class="pain-avatar">${tigerHead(40)}</span>Le problème n’est pas ta motivation. C’est que personne ne te dit la vérité sur tes journées. Nous, si. Avec tendresse.</p>
   </div>
 </section>
 
@@ -129,7 +136,8 @@ export const home = {
       <p class="lead">Tiger Task réagit à tes couleurs. Trop de flemme&nbsp;? Elle te le fait remarquer. Une journée parfaite&nbsp;? Elle s’inquiète pour toi. Rien de méchant&nbsp;: juste assez pour que tu souries, et que tu reviennes demain.</p>
       <p class="fine">Tu préfères le silence&nbsp;? Ça se coupe en un geste.</p>
     </div>
-    <div class="bubbles reveal" aria-label="Exemples de réactions de l’app">
+    <div class="bubbles reveal" aria-label="Exemples de réactions du tigre">
+      <div class="bubbles-who">${tigerHead(56)}<span>Le tigre, ton coach pas très diplomate</span></div>
       <p class="bubble"><i class="d-y"></i>Trois reports. Elle a emménagé chez toi.</p>
       <p class="bubble"><i class="d-k"></i>EPIC FAIL débloqué. Il fallait oser.</p>
       <p class="bubble"><i class="d-b"></i>EPIC WIN. Projet bouclé. Champagne (avec modération).</p>
@@ -149,7 +157,7 @@ export const home = {
       <p class="lead">Quand la journée se termine, l’app passe en mode nuit. Une lumière douce, le temps de regarder ta journée en face. Pas pour te juger&nbsp;: la flemme, ça se soigne mieux en riant.</p>
       <a class="btn btn-light" href="/methode/">Découvrir la méthode</a>
     </div>
-    <div class="reveal">${appMock({ night: true })}</div>
+    <div class="reveal">${dayCard({ night: true })}</div>
   </div>
 </section>
 
@@ -172,6 +180,7 @@ export const home = {
 
 <section class="final">
   <div class="wrap narrow reveal">
+    <div class="final-tiger">${tigerHead(72)}<p class="tiger-bubble is-static">Bon. On s’y met, ou je retourne dormir&nbsp;?</p></div>
     <h2>Demain matin, une seule ligne.</h2>
     <p class="lead">C’est tout ce qu’il faut pour commencer. Le reste viendra, jour après jour. Et l’app sera là pour te chambrer.</p>
     <a class="btn btn-primary btn-lg" href="/app/">Poser ma première journée</a>
