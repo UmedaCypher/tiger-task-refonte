@@ -229,7 +229,6 @@ function Lens({
   const judged = tasks.filter((t) => t.pigment !== 'white').length;
   const pct = n ? Math.round((judged / n) * 100) : 0;
   const left = n - judged;
-  const when = day === today ? 'Aujourd’hui' : day < today ? 'Passé' : 'À venir';
   const free = day > today ? 'À venir' : !n ? '' : left === 0 ? 'Liberté débloquée' : day < today ? 'En attente de verdict' : `Liberté dans ${left} tâche${left > 1 ? 's' : ''}`;
   return (
     <section className={`st-lens lens ${day === today ? 'is-today' : ''} ${n && !left ? 'is-free' : ''}`} data-day={day} aria-label={label}>
@@ -237,8 +236,7 @@ function Lens({
         <button className="st-nav" onClick={() => onStep(-1)} aria-label="Jour précédent">
           <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true"><path d="m5 12.5 5-5 5 5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </button>
-        <span className="st-pill">{label.charAt(0).toUpperCase() + label.slice(1)}</span>
-        <span className={`st-when ${day === today ? 'is-today' : ''}`}>{when}</span>
+        <span className={`st-pill ${day === today ? 'is-today' : ''}`}>{label.charAt(0).toUpperCase() + label.slice(1)}</span>
         <button className="st-nav" onClick={() => onStep(1)} aria-label="Jour suivant">
           <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true"><path d="m5 7.5 5 5 5-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </button>

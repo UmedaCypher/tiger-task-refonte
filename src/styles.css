@@ -2489,24 +2489,6 @@ html[data-excel='off'] body {
   gap: 10px;
 }
 .st-pill,
-.st-when {
-  padding: 6px 14px;
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--ink-2);
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.85);
-}
-.st-when {
-  padding: 6px 11px;
-  font-size: 12px;
-}
-.st-when.is-today {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--on-accent);
-}
 .st-nav {
   width: 32px;
   height: 32px;
@@ -2526,8 +2508,7 @@ html[data-excel='off'] body {
   transform: scale(0.92);
 }
 [data-theme='night'] .st-pill,
-[data-theme='night'] .st-nav,
-[data-theme='night'] .st-when:not(.is-today) {
+[data-theme='night'] .st-nav {
   background: rgba(255, 255, 255, 0.08);
   border-color: rgba(255, 255, 255, 0.14);
 }
@@ -2618,4 +2599,7 @@ html[data-excel='off'] body {
   .st-lens.is-free .st-fill {
     animation: none;
   }
+}
+.st-pill.is-today {
+  color: var(--accent-ink);
 }
