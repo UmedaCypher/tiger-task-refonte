@@ -90,6 +90,40 @@ const LAKE_W = (z: number) => 1.7 + Math.max(0, 6 - z) * 0.11 + Math.max(0, -z -
 const SHORE = (z: number) => LAKE_X(z) + LAKE_W(z) + 1.35;
 const HOME = { x: SHORE(5.6) + 1.2, z: 5.6 }; // la place du tigre, près du grand arbre
 const PATH = { z: 5.9, a: SHORE(5.9) - 0.2, b: SHORE(5.9) + 3.6 }; // la rive qu'il arpente
+// ---- cadrage : la caméra garde la même largeur de champ quelle que soit la forme de la fenêtre
+const CAM_Z = 30;
+const H_TAN = Math.tan(THREE.MathUtils.degToRad(14)) * 1.78; // largeur de champ d'un écran 16:9
+function layout(aspect: number, narrow: boolean) {
+  const vfov = THREE.MathUtils.clamp(THREE.MathUtils.radToDeg(2 * Math.atan(H_TAN / aspect)), 9, 34);
+  const hTan = Math.tan(THREE.MathUtils.degToRad(vfov / 2)) * aspect;
+  const halfAt = hTan * (CAM_Z - HOME.z);
+  return { vfov, offset: halfAt * (narrow ? 0.3 : 0.46) - HOME.x };
+}
+// la scène n'existe que dans un V qui suit le champ de vision : étroit devant, large au fond
+const V_CX = HOME.x - 3;
+const inV = (x: number, z: number, margin = 3) => Math.abs(x - V_CX) < 0.56 * (CAM_Z - z) + margin;
+/** Ne garde que les faces d'une géométrie (non indexée) qui tombent dans le champ */
+function cullToV(g: THREE.BufferGeometry, margin = 4) {
+  const p = g.attributes.position as THREE.BufferAttribute;
+  const c = g.attributes.color as THREE.BufferAttribute | undefined;
+  const keepP: number[] = [];
+  const keepC: number[] = [];
+  for (let i = 0; i < p.count; i += 3) {
+    const x = (p.getX(i) + p.getX(i + 1) + p.getX(i + 2)) / 3;
+    const z = (p.getZ(i) + p.getZ(i + 1) + p.getZ(i + 2)) / 3;
+    if (!inV(x, z, margin)) continue;
+    for (let j = 0; j < 3; j++) {
+      keepP.push(p.getX(i + j), p.getY(i + j), p.getZ(i + j));
+      if (c) keepC.push(c.getX(i + j), c.getY(i + j), c.getZ(i + j));
+    }
+  }
+  const out = new THREE.BufferGeometry();
+  out.setAttribute('position', new THREE.Float32BufferAttribute(keepP, 3));
+  if (c) out.setAttribute('color', new THREE.Float32BufferAttribute(keepC, 3));
+  out.computeVertexNormals();
+  return out;
+}
+
 /** Garde dégagés la place du tigre et son chemin, pour qu'aucun objet ne le cache */
 const clear = (x: number, z: number) =>
   Math.hypot(x - HOME.x, z - HOME.z) > 2.4 && !(z > PATH.z - 1.6 && z < PATH.z + 3.5 && x > PATH.a - 1.2 && x < PATH.b + 1.6);
@@ -115,7 +149,7 @@ export function createWorld(canvas: HTMLCanvasElement, opts: { reduced: boolean 
   const scene = new THREE.Scene();
   scene.fog = new THREE.Fog(MOODS.dawn.fog, 38, 150);
   const camera = new THREE.PerspectiveCamera(28, 1, 0.1, 500);
-  const camBase = new THREE.Vector3(0, 8.5, 30);
+  const camBase = new THREE.Vector3(0, 8.5, CAM_Z);
   const camLook = new THREE.Vector3(0, 1.6, -8);
 
   const land = new THREE.Group(); // tout le paysage ; décalé pour laisser la gauche au contenu
@@ -192,23 +226,26 @@ export function createWorld(canvas: HTMLCanvasElement, opts: { reduced: boolean 
       if (z < -45) return vary(pick(mauve));
       return vary(pick(rnd() > 0.75 ? dry : grass));
     });
-    const m = new THREE.Mesh(geo, facetMat);
+    const m = new THREE.Mesh(cullToV(geo), facetMat);
     m.receiveShadow = true;
+    m.userData.keep = true;
     land.add(m);
   };
-  groundPiece(28, 0, 200, 48, -14); // devant : z de -14 à 14
-  groundPiece(84, -56, 56, 26, -14); // fond : z de -98 à -14
+  groundPiece(28, 0, 300, 70, -14); // devant, très fin : z de -14 à 14
+  groundPiece(84, -56, 70, 30, -14); // fond, grossier : z de -98 à -14
 
   // ---- eau
   const water = (() => {
-    const g = new THREE.PlaneGeometry(140, 110, 80, 60).toNonIndexed();
-    g.rotateX(-Math.PI / 2);
-    g.translate(0, -0.05, -41);
+    const plane = new THREE.PlaneGeometry(140, 110, 100, 70).toNonIndexed();
+    plane.rotateX(-Math.PI / 2);
+    plane.translate(0, -0.05, -41);
+    const g = cullToV(plane);
     const m = new THREE.Mesh(
       g,
       new THREE.MeshStandardMaterial({ color: MOODS.dawn.water, flatShading: true, roughness: 0.22, metalness: 0.08, transparent: true, opacity: 0.96 }),
     );
     m.receiveShadow = true;
+    m.userData.keep = true;
     m.userData.base = Float32Array.from((g.attributes.position as THREE.BufferAttribute).array);
     land.add(m);
     return m;
@@ -359,9 +396,9 @@ export function createWorld(canvas: HTMLCanvasElement, opts: { reduced: boolean 
     const m = new THREE.InstancedMesh(g, solid('#ffffff', { emissive: '#ffffff', emissiveIntensity: 0.08 }), 320);
     const o = new THREE.Object3D();
     let n = 0;
-    for (let i = 0; i < 900 && n < 320; i++) {
+    for (let i = 0; i < 2000 && n < 320; i++) {
       const z = range(-8, 11);
-      const x = range(-12, 16);
+      const x = V_CX + range(-1, 1) * (0.56 * (CAM_Z - z));
       const y = height(x, z);
       if (y < 0.2 || Math.abs(x - LAKE_X(z)) < LAKE_W(z) + 1.2) continue;
       o.position.set(x, y + 0.08, z);
@@ -416,7 +453,7 @@ export function createWorld(canvas: HTMLCanvasElement, opts: { reduced: boolean 
     let n = 0;
     for (let i = 0; i < count * 3 && n < count; i++) {
       const at = place();
-      if (!at) continue;
+      if (!at || !inV(at[0], at[1], 0)) continue;
       const [x, z] = at;
       o.position.set(x, Math.max(height(x, z), -0.3), z);
       o.rotation.set(range(-0.35, 0.35), rnd() * 6, range(-0.35, 0.35));
@@ -432,7 +469,7 @@ export function createWorld(canvas: HTMLCanvasElement, opts: { reduced: boolean 
     return m;
   };
   blades(
-    420,
+    700,
     () => {
       const z = range(-14, 10);
       return [LAKE_X(z) + (rnd() > 0.5 ? 1 : -1) * (LAKE_W(z) + range(-0.25, 0.7)), z];
@@ -442,10 +479,10 @@ export function createWorld(canvas: HTMLCanvasElement, opts: { reduced: boolean 
     0.035,
   );
   blades(
-    1100,
+    2200,
     () => {
-      const z = range(-6, 11);
-      const x = range(-14, 16);
+      const z = range(-8, 12);
+      const x = V_CX + range(-1, 1) * (0.56 * (CAM_Z - z));
       return height(x, z) > 0.15 ? [x, z] : null;
     },
     ['#a8b064', '#c3b469', '#93a35b'],
@@ -498,6 +535,12 @@ export function createWorld(canvas: HTMLCanvasElement, opts: { reduced: boolean 
   const flies = new THREE.Points(flyGeo, flyMat);
   land.add(flies);
 
+  // tout ce qui tombe hors du champ est retiré
+  for (const o of [...land.children]) {
+    if (o.userData.keep || (o as THREE.InstancedMesh).isInstancedMesh || o instanceof THREE.Points) continue;
+    if (!inV(o.position.x, o.position.z, 2)) land.remove(o);
+  }
+
   // ================================================================ le tigre
   const T = buildTiger();
   const tiger = T.root;
@@ -548,12 +591,13 @@ export function createWorld(canvas: HTMLCanvasElement, opts: { reduced: boolean 
     renderer.setSize(w, h, false);
     composer.setSize(w, h);
     camera.aspect = w / h;
-    camera.updateProjectionMatrix();
     // le tigre se place aux trois quarts de l'écran (au centre-droit sur mobile)
-    const halfAt = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * (camBase.z - home.z) * camera.aspect;
-    land.position.x = halfAt * (w < 700 ? 0.3 : 0.46) - home.x;
+    const L = layout(camera.aspect, w < 700);
+    camera.fov = L.vfov;
+    camera.updateProjectionMatrix();
+    land.position.x = L.offset;
     hBlur.uniforms.h.value = 3.4 / w;
-    vBlur.uniforms.v.value = 3.4 / h;
+    vBlur.uniforms.v.value = 3.4 / Math.max(h, w * 0.5);
   };
   resize();
 
@@ -632,7 +676,13 @@ export function createWorld(canvas: HTMLCanvasElement, opts: { reduced: boolean 
     pointer.sx = opts.reduced ? 0 : damp(pointer.sx, pointer.x, 2, dt);
     pointer.sy = opts.reduced ? 0 : damp(pointer.sy, pointer.y, 2, dt);
     camera.position.set(camBase.x + pointer.sx * 0.6, camBase.y - pointer.sy * 0.25, camBase.z);
-    camera.lookAt(camLook.x, camLook.y, camLook.z);
+    // fenêtre très basse : la caméra se resserre et vise le tigre pour qu'il reste à l'image
+    const tight = smooth(26, 12, camera.fov);
+    camera.lookAt(
+      lerp(camLook.x, tiger.position.x + land.position.x - 3.2, tight),
+      lerp(camLook.y, tiger.position.y + 0.6, tight),
+      lerp(camLook.z, tiger.position.z, tight),
+    );
 
     // ---- netteté sur le tigre, flou de maquette autour
     focus.getWorldPosition(headPos);
