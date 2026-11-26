@@ -19,7 +19,7 @@ const COPY: Record<PaywallReason, { title: string; lead: string }> = {
   },
   bilan: {
     title: 'Vois enfin où passe ton temps.',
-    lead: 'Ton indice de flemme, tes EPIC FAIL, les tâches que tu fuis depuis des semaines. Le bilan ne ment pas. C’est pour ça qu’il aide (et qu’il pique un peu).',
+    lead: 'Ton indice de flemme, tes EPIC WIN, tes EPIC FAIL, les tâches que tu fuis depuis des semaines. Le bilan ne ment pas. C’est pour ça qu’il aide (et qu’il pique un peu).',
   },
   upgrade: {
     title: 'Deviens la personne qui tient sa journée.',
@@ -86,7 +86,7 @@ function Paywall({ reason, onClose }: { reason: PaywallReason; onClose: () => vo
       <p className="pw-lead">{copy.lead}</p>
       <ul className="pw-gains">
         <li>Relis chaque jour de ton année, et de toutes les suivantes</li>
-        <li>Ton bilan : ton indice de flemme, tes EPIC FAIL, tes vrais progrès</li>
+        <li>Ton bilan : ta flemme, tes EPIC WIN, tes EPIC FAIL</li>
         <li>Les widgets d’écran d’accueil, dès leur sortie</li>
       </ul>
       <div className="pw-plans" role="radiogroup" aria-label="Offre">

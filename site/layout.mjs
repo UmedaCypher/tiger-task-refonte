@@ -87,7 +87,7 @@ export function appMock({ night = false } = {}) {
   ${rows.map((r, i, a) => row(r, i, a, 'up')).join('')}
   <div class="m-lens">
     <div class="m-lens-head"><span>Jeudi 26 novembre</span><em>2/5</em></div>
-    <div class="m-chips">${chip('g', 'Préparer la réunion', 1)}${chip('b', 'Relire le contrat', 1)}${chip('w', 'Réserver le train')}${chip('w', 'Sport 30 min')}${chip('y', 'Appeler la banque')}</div>
+    <div class="m-chips">${chip('g', 'Préparer la réunion', 1)}${chip('g', 'Relire le contrat', 1)}${chip('w', 'Réserver le train')}${chip('w', 'Sport 30 min')}${chip('y', 'Appeler la banque')}</div>
   </div>
   ${after.map((r, i, a) => row(r, i, a, 'down')).join('')}
   <div class="m-fab"><small>JEU</small>26</div>

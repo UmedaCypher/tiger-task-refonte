@@ -23,12 +23,13 @@ export function Bilan({ year, locked }: { year: number; locked: boolean }) {
           </button>
         </div>
       )}
-      <p className="verdict">{bilanVerdict(b.flemme, b.epicFails, b.judged)}</p>
+      <p className="verdict">{bilanVerdict(b.flemme, b.epicFails, b.judged, b.epicWins)}</p>
       <table className="kv">
         <tbody>
           <tr><th>Tâches en {year}</th><td>{b.total}</td></tr>
           <tr><th>Faites</th><td>{pct(b.accomplishment)}</td></tr>
           <tr><th>Indice de flemme</th><td>{pct(b.flemme)}</td></tr>
+          <tr><th>EPIC WIN</th><td>{b.epicWins}</td></tr>
           <tr><th>EPIC FAIL</th><td>{b.epicFails}</td></tr>
           <tr><th>Jours de suite</th><td>{b.streak} <span className="muted">· record {b.bestStreak}</span></td></tr>
         </tbody>

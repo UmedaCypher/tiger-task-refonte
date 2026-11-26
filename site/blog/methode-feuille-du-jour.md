@@ -19,7 +19,7 @@ Cette contrainte change tout. Une ligne, c’est petit. Tu ne peux pas y mettre 
 Avant de fermer ta journée, tu donnes une couleur à chaque tâche :
 
 - **Faite** : c’est fait. Bravo.
-- **Enfin !** : elle traînait depuis des jours. Miracle.
+- **EPIC WIN** : la dernière tâche d’un projet, la fin d’un long combat. Champagne.
 - **Flemme** : pas envie aujourd’hui. Elle revient demain. Feignasse assumée.
 - **Imprévu** : reportée, et pour une fois ce n’est pas ta faute.
 - **Abandonnée** : plus besoin, ou plus envie. On lâche, sans regret.
@@ -29,7 +29,7 @@ Ce moment prend deux minutes. C’est pourtant le cœur de la méthode : un inst
 
 ## Ce que tu reportes te suit
 
-Une tâche reportée ne disparaît pas dans un coin. Elle se recopie le lendemain, avec un compteur. Au troisième report, tu ne peux plus faire semblant de ne pas la voir. Et le jour où tu la termines, elle devient bleue. C’est souvent la plus belle case de la semaine.
+Une tâche reportée ne disparaît pas dans un coin. Elle se recopie le lendemain, avec un compteur. Au troisième report, tu ne peux plus faire semblant de ne pas la voir. Et le jour où tu la termines enfin, tu ressens un soulagement que peu d’applis savent offrir.
 
 ## Pourquoi ça marche
 

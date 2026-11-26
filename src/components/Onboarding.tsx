@@ -9,7 +9,7 @@ const DONE_KEY = 'tt:onboarded';
 const MEANING: Record<Pigment, string> = {
   white: 'Pas encore jugée.',
   green: 'C’est fait. Bravo, champion.',
-  blue: 'Elle traînait depuis des jours. Miracle.',
+  blue: 'La dernière tâche d’un projet, la fin d’un long combat. L’inverse de l’EPIC FAIL.',
   yellow: 'Pas envie aujourd’hui. Demain, promis. Feignasse assumée.',
   purple: 'Reportée, et pour une fois ce n’est pas ta faute.',
   red: 'Plus besoin, ou plus envie. On lâche, sans regret.',
@@ -94,7 +94,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
     {
       eyebrow: 'Ta flemme te suit',
       title: 'Ce que tu reportes revient demain.',
-      body: 'En jaune, la tâche se recopie toute seule le lendemain, avec son compteur. Au troisième report, l’app commence à te chambrer. Le jour où tu la finis enfin, elle devient bleue. Miracle.',
+      body: 'En jaune, la tâche se recopie toute seule le lendemain, avec son compteur. Au troisième report, l’app commence à te chambrer. Le jour où tu la finis enfin, ouf.',
       visual: (
         <div className="ob-carry" aria-hidden="true">
           <span className="chip is-yellow" style={{ ['--fill' as string]: PIGMENTS.yellow.fill, ['--ink' as string]: PIGMENTS.yellow.ink }}>
@@ -105,8 +105,8 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
             Flemme ↻3
           </span>
           <span className="ob-arrow">→</span>
-          <span className="chip is-blue" style={{ ['--fill' as string]: PIGMENTS.blue.fill, ['--ink' as string]: PIGMENTS.blue.ink }}>
-            Enfin !
+          <span className="chip is-green" style={{ ['--fill' as string]: PIGMENTS.green.fill, ['--ink' as string]: PIGMENTS.green.ink }}>
+            Enfin faite
           </span>
         </div>
       ),
@@ -114,7 +114,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
     {
       eyebrow: 'Dans un mois',
       title: 'Tu verras qui tu es vraiment.',
-      body: 'Pas celui que tu promets d’être. Tes jours colorés dessinent ton année : tes semaines de champion, ta flemme, tes EPIC FAIL. Sans jugement. Enfin, presque.',
+      body: 'Pas celui que tu promets d’être. Tes jours colorés dessinent ton année : tes EPIC WIN, ta flemme, tes EPIC FAIL. Sans jugement. Enfin, presque.',
       visual: (
         <div className="ob-year" aria-hidden="true">
           {Array.from({ length: 84 }, (_, i) => {

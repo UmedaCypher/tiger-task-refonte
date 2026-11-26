@@ -3,7 +3,7 @@ import { appMock } from './layout.mjs';
 
 const colors = [
   ['g', 'Faite', 'C’est fait. Bravo, champion.'],
-  ['b', 'Enfin !', 'Elle traînait depuis des jours. Miracle.'],
+  ['b', 'EPIC WIN', 'La dernière tâche d’un projet, la fin d’un long combat. Champagne.'],
   ['y', 'Flemme', 'Pas envie aujourd’hui. Demain, promis. Feignasse assumée : elle revient toute seule.'],
   ['p', 'Imprévu', 'Reportée, et pour une fois ce n’est pas ta faute.'],
   ['r', 'Abandonnée', 'Plus besoin, ou plus envie. On lâche, sans regret.'],
@@ -93,8 +93,8 @@ export const home = {
     <ol class="timeline">
       <li class="reveal"><span>Jour 1</span><h3>Tu poses ta journée en deux minutes.</h3><p>Pas de projets, pas de priorités à calculer. Juste ce qui compte aujourd’hui, sur une ligne.</p></li>
       <li class="reveal"><span>Semaine 1</span><h3>Ta flemme a enfin un nom. Et une couleur.</h3><p>Le soir, chaque tâche reçoit son verdict. Jaune pour la flemme assumée, noir pour l’EPIC FAIL. Tu ris un peu, et tu fais mieux le lendemain.</p></li>
-      <li class="reveal"><span>Mois 1</span><h3>Les tâches qui squattaient partent enfin.</h3><p>Ce que tu repoussais depuis des semaines devient bleu, une par une. Tu tiens ta feuille sans même y penser.</p></li>
-      <li class="reveal"><span>Année 1</span><h3>Tu as la preuve que tu as changé.</h3><p>Ton année tient sur un écran&nbsp;: tes meilleures semaines, tes creux, ta discipline qui s’est installée.</p></li>
+      <li class="reveal"><span>Mois 1</span><h3>Les tâches qui squattaient partent enfin.</h3><p>Ce que tu repoussais depuis des semaines passe enfin au vert. Tu tiens ta feuille sans même y penser.</p></li>
+      <li class="reveal"><span>Année 1</span><h3>Tu as la preuve que tu as changé.</h3><p>Ton année tient sur un écran&nbsp;: tes EPIC WIN, tes creux, ta discipline qui s’est installée.</p></li>
     </ol>
   </div>
 </section>
@@ -125,7 +125,8 @@ export const home = {
     <div class="bubbles reveal" aria-label="Exemples de réactions de l’app">
       <p class="bubble"><i class="d-y"></i>Trois reports. Elle a emménagé chez toi.</p>
       <p class="bubble"><i class="d-k"></i>EPIC FAIL débloqué. Il fallait oser.</p>
-      <p class="bubble"><i class="d-b"></i>Enfin&nbsp;! Elle commençait à payer un loyer.</p>
+      <p class="bubble"><i class="d-b"></i>EPIC WIN. Projet bouclé. Champagne (avec modération).</p>
+      <p class="bubble"><i class="d-g"></i>Enfin&nbsp;! Elle commençait à payer un loyer.</p>
       <p class="bubble"><i class="d-g"></i>Tout est vert. Qui es-tu, et qu’as-tu fait de toi&nbsp;?</p>
       <p class="bubble"><i class="d-r"></i>Abandonnée. Parfois, lâcher, c’est grandir.</p>
     </div>
@@ -190,8 +191,8 @@ export const methode = {
     ${colors.map(([c, n, d]) => `<div role="listitem" class="swatch"><i class="d-${c}"></i><b>${n}</b><span>${d}</span></div>`).join('')}
   </div>
   <h2>3. Ta flemme te suit</h2>
-  <p>Une tâche en flemme (jaune) ou en imprévu (violet) se recopie toute seule le lendemain, avec un compteur. Elle ne disparaît pas dans une liste infinie&nbsp;: elle te suit, et l’app commence à te chambrer au troisième report. Le jour où tu la termines enfin, elle devient bleue. Rien n’est plus satisfaisant.</p>
-  <p>Abandonner n’est pas reporter&nbsp;: en rouge, la tâche part pour de bon, sans regret. Et le noir est réservé aux EPIC FAIL, ces échecs si spectaculaires qu’on finit par en rire.</p>
+  <p>Une tâche en flemme (jaune) ou en imprévu (violet) se recopie toute seule le lendemain, avec un compteur. Elle ne disparaît pas dans une liste infinie&nbsp;: elle te suit, et l’app commence à te chambrer au troisième report. Le jour où tu la termines enfin, ouf.</p>
+  <p>Abandonner n’est pas reporter&nbsp;: en rouge, la tâche part pour de bon, sans regret. Le noir est réservé aux EPIC FAIL, ces échecs si spectaculaires qu’on finit par en rire. Et son contraire, le bleu, aux EPIC WIN&nbsp;: la dernière tâche d’un projet, la fin d’un long combat.</p>
   <h2>4. L’année comme un tableau</h2>
   <p>Jour après jour, tes couleurs dessinent ton année. Tu vois tes semaines pleines, tes creux, tes habitudes qui s’installent. Ce n’est pas un score&nbsp;: c’est un miroir.</p>
   <h2>Pourquoi ça marche</h2>
@@ -235,7 +236,7 @@ const faqs = [
   ['Est-ce que ça marche sur iPhone et Android&nbsp;?', 'Oui. Ouvre l’app dans ton navigateur, puis « Ajouter à l’écran d’accueil » : elle s’installe comme une vraie app, et fonctionne même hors ligne. Des widgets d’écran d’accueil arrivent bientôt.'],
   ['Où sont stockées mes tâches&nbsp;?', 'Sur ton appareil, pour que l’app soit instantanée et marche hors ligne. Avec un compte (gratuit), elles sont aussi sauvegardées sur nos serveurs et synchronisées sur tes autres appareils. Personne d’autre ne les lit.'],
   ['Je n’ai jamais tenu une to-do list plus d’une semaine. Pourquoi celle-ci&nbsp;?', 'Parce qu’elle ne te demande presque rien : une ligne le matin, une couleur le soir. Et parce qu’elle te montre ce que tu repousses, ce qui donne une vraie raison d’y revenir.'],
-  ['C’est quoi les sept couleurs&nbsp;?', 'Faite, enfin !, flemme, imprévu, abandonnée, EPIC FAIL, et à faire. Le détail est sur la page <a href="/methode/">La méthode</a>.'],
+  ['C’est quoi les sept couleurs&nbsp;?', 'Faite, EPIC WIN, flemme, imprévu, abandonnée, EPIC FAIL, et à faire. Le détail est sur la page <a href="/methode/">La méthode</a>.'],
   ['L’app va vraiment me roaster&nbsp;?', 'Oui, gentiment. Quand tu colores une tâche en jaune pour la troisième fois, elle te le fait remarquer. Rien de méchant, et ça se coupe en un geste dans ton compte.'],
   ['Puis-je exporter mes données&nbsp;?', 'Oui, à tout moment et gratuitement, depuis ton compte. Tes données t’appartiennent.'],
   ['Comment résilier Pro&nbsp;?', 'Depuis ton compte, en deux clics. Tu gardes Pro jusqu’à la fin de la période payée.'],

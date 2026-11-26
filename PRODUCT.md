@@ -22,7 +22,7 @@ Méthode d'origine : un simple tableau Excel (une ligne par jour, cellules color
 - Une ligne par jour, toute l'année ; la ligne du jour est mise en avant.
 - Les tâches sont toujours disposées horizontalement dans la ligne (jamais en liste verticale), y compris sur mobile.
 - Une seule ligne « ouverte » à la fois (aujourd'hui par défaut) : ses cellules passent à la ligne ; les lignes fermées tiennent sur une hauteur, avec une cellule « +N » colorée pour le débordement.
-- 7 couleurs : à faire, faite, reportée (flemme), pas faite, enfin faite, reportée (imprévu), échec.
+- 7 couleurs : à faire, faite, EPIC WIN (projet bouclé), flemme (reportée), imprévu (reportée), abandonnée, EPIC FAIL. Ton feel good, l'app « roaste » gentiment.
 - Rituels (tâches récurrentes), bilan annuel, compte Supabase, abonnement Stripe.
 - Local-first, hors ligne ; hébergement Cloudflare (Worker avec assets statiques) ; Supabase.
 

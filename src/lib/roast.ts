@@ -44,9 +44,10 @@ const LINES: Record<Exclude<Pigment, 'white' | 'yellow'>, string[]> = {
     'Bien joué. Ne t’habitue pas trop aux compliments.',
   ],
   blue: [
-    'Il t’aura fallu {n} jours. Mais respect.',
-    'Enfin ! Elle commençait à payer un loyer.',
-    'Miracle. On va prévenir ta mère.',
+    'EPIC WIN. Projet bouclé. Champagne (avec modération).',
+    'C’est fini. Tu as le droit de le dire à tout le monde.',
+    'Des semaines de boulot, et c’est plié. Respect absolu.',
+    'EPIC WIN. Encadre cette ligne, elle le mérite.',
   ],
   purple: [
     'Imprévu. Pour une fois, ce n’est pas ta faute.',
@@ -83,8 +84,9 @@ export function roastFor(task: Task, pigment: Pigment, dayTasks: Task[]): string
   }
   if (judged.length === dayTasks.length && dayTasks.length >= 3) return 'Journée bouclée. Va te reposer, tu l’as bien mérité.';
   if (pigment === 'yellow') return flemme(task.carryCount + 1);
+  if (pigment === 'blue') return pick(LINES.blue);
+  if (pigment === 'green' && task.carryCount >= 2) return pick(['Enfin ! Elle commençait à payer un loyer.', 'Après {n} reports. Miracle, on va prévenir ta mère.'], task.carryCount);
   if (pigment === 'green') return Math.random() < 0.35 ? pick(LINES.green) : null;
-  if (pigment === 'blue') return pick(LINES.blue, Math.max(2, task.carryCount + 1));
   return pick(LINES[pigment]);
 }
 
@@ -99,6 +101,7 @@ export function dayLine(tasks: Task[], day: DayKey, today: DayKey): string {
     if (day > today) return 'Rien de prévu. Profite, ça ne durera pas.';
     return 'Page blanche. Ambitieux.';
   }
+  if (c('blue') > 0) return c('black') > 0 ? 'Un EPIC WIN et un EPIC FAIL. Journée intense.' : 'EPIC WIN du jour. Encadre cette ligne.';
   if (c('black') > 0) return c('black') > 1 ? `${c('black')} EPIC FAIL. Journée historique.` : 'Un EPIC FAIL au compteur. Journée mémorable.';
   if (done === n) return 'Tout vert. Suspect, mais bravo.';
   if (c('yellow') >= 2) return 'La flemme est forte aujourd’hui.';
@@ -110,7 +113,7 @@ export function dayLine(tasks: Task[], day: DayKey, today: DayKey): string {
 }
 
 /** Le verdict du bilan, d'après l'indice de flemme */
-export function bilanVerdict(flemmeRate: number, epicFails: number, judged: number): string {
+export function bilanVerdict(flemmeRate: number, epicFails: number, judged: number, epicWins = 0): string {
   if (judged < 10) return 'Pas encore assez de verdicts pour te roaster. Reviens dans quelques jours.';
   const f = flemmeRate * 100;
   const base =
@@ -122,5 +125,6 @@ export function bilanVerdict(flemmeRate: number, epicFails: number, judged: numb
           ? 'La flemme et toi, c’est sérieux.'
           : 'Tu n’as pas une flemme. Tu ES la flemme.';
   const fails = epicFails === 0 ? '' : epicFails === 1 ? ' Et un EPIC FAIL, pour le folklore.' : ` Et ${epicFails} EPIC FAIL. Une collection.`;
-  return base + fails;
+  const wins = epicWins === 0 ? '' : epicWins === 1 ? ' Mais un EPIC WIN : ça, personne ne te l’enlèvera.' : ` Mais ${epicWins} EPIC WIN : chapeau.`;
+  return base + fails + wins;
 }

@@ -197,11 +197,11 @@ export function setPigment(id: string, pigment: Pigment) {
   emit(putTasks(changes));
 }
 
-/** Geste rapide : toucher le sceau marque « faite » (Azur si la tâche traînait). */
+/** Geste rapide : toucher le carré marque « faite ». L'EPIC WIN (bleu) se choisit, il ne s'attribue pas tout seul. */
 export function quickComplete(id: string) {
   const t = state.tasks[id];
   if (!t) return;
-  if (t.pigment === 'white') setPigment(id, t.carryCount > 0 ? 'blue' : 'green');
+  if (t.pigment === 'white') setPigment(id, 'green');
   else setPigment(id, 'white');
 }
 
