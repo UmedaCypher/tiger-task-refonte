@@ -77,8 +77,8 @@ const shadows = (o: THREE.Object3D, cast = true, receive = false) =>
 // ------------------------------------------------------------------ ambiances
 
 const MOODS = {
-  dawn: { top: '#9cc0ea', mid: '#f5c3c2', low: '#fbdcc4', fog: '#f4d6c8', hemiSky: '#fff1ea', hemiGround: '#d9b9a4', sun: '#ffe1bf', sunI: 2.7, hemiI: 2.1, water: '#86b0dc' },
-  gold: { top: '#b3cbe9', mid: '#f8cf9e', low: '#fde3bb', fog: '#f7dbb4', hemiSky: '#fff4d8', hemiGround: '#d9b088', sun: '#ffd08c', sunI: 3.3, hemiI: 2.3, water: '#93b9dc' },
+  dawn: { top: '#9cc0ea', mid: '#f5c3c2', low: '#fbdcc4', fog: '#f2d2c4', hemiSky: '#ffe9e4', hemiGround: '#c9a08c', sun: '#ffdcb4', sunI: 3.6, hemiI: 1.35, water: '#6fa6d6' },
+  gold: { top: '#b3cbe9', mid: '#f8cf9e', low: '#fde3bb', fog: '#f6d6ad', hemiSky: '#fff0d4', hemiGround: '#c99a70', sun: '#ffc97e', sunI: 4.0, hemiI: 1.45, water: '#7fb2d8' },
   night: { top: '#121531', mid: '#33284f', low: '#64415a', fog: '#4b3352', hemiSky: '#8f84c8', hemiGround: '#2c2140', sun: '#cdd6ff', sunI: 0.7, hemiI: 1.0, water: '#3d3e6e' },
 };
 type Palette = typeof MOODS.dawn;
@@ -131,17 +131,19 @@ function height(x: number, z: number) {
   const dx = Math.abs(x - LAKE_X(z));
   const w = LAKE_W(z);
   const far = Math.max(0, -z - 8);
-  const hills = 0.55 * Math.sin(x * 0.23 + 1) + 0.4 * Math.cos(z * 0.27 + x * 0.11) + 0.25 * Math.sin(x * 0.7 + z * 0.4);
-  const land = 0.25 + Math.max(0, hills) * smooth(w + 2, w + 7, dx) + far * 0.02 + far * far * 0.0007;
-  const cliffs = x - LAKE_X(z) > 0 ? smooth(w + 7, w + 11, dx) * (2.2 + Math.sin(z * 0.5) * 0.8) * smooth(4, -6, z) : 0;
-  return lerp(-0.9, land + cliffs, smooth(w, w + 1.6, dx));
+  // dunes : des crêtes vives, longues et ondulées, plus hautes en s'éloignant de l'eau
+  const crest = (f: number, a: number, p: number) => Math.pow(1 - Math.abs(Math.sin(x * f + z * a + Math.sin(z * 0.11 + p) * 1.3 + p)), 1.8);
+  const dunes = crest(0.2, 0.13, 0) * 1.5 + crest(0.37, -0.09, 2.1) * 0.6;
+  const land = 0.22 + dunes * smooth(w + 1.2, w + 7, dx) * (1 + far * 0.04) + far * 0.02;
+  return lerp(-0.9, land, smooth(w, w + 1.4, dx));
 }
 
 // ------------------------------------------------------------------ monde
 
 export function createWorld(canvas: HTMLCanvasElement, opts: { reduced: boolean }) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'low-power' });
-  const dpr = Math.min(devicePixelRatio, 1.5);
+  const small = Math.min(innerWidth, innerHeight) < 600;
+  const dpr = Math.min(devicePixelRatio, small ? 1 : 1.5);
   renderer.setPixelRatio(dpr);
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -192,7 +194,7 @@ export function createWorld(canvas: HTMLCanvasElement, opts: { reduced: boolean 
   scene.add(hemi);
   const sun = new THREE.DirectionalLight(MOODS.dawn.sun, MOODS.dawn.sunI);
   sun.castShadow = true;
-  sun.shadow.mapSize.set(1024, 1024);
+  sun.shadow.mapSize.set(small ? 512 : 1024, small ? 512 : 1024);
   Object.assign(sun.shadow.camera, { left: -7, right: 7, top: 7, bottom: -7, near: 1, far: 60 });
   sun.shadow.bias = -0.0015;
   sun.shadow.normalBias = 0.03;
@@ -205,7 +207,7 @@ export function createWorld(canvas: HTMLCanvasElement, opts: { reduced: boolean 
     g.translate(0, 0, zCenter);
     const p = g.attributes.position as THREE.BufferAttribute;
     const jit = new Map<string, number>();
-    const amp = segX > 100 ? 0.12 : 0.22;
+    const amp = segX > 100 ? 0.22 : 0.4;
     for (let i = 0; i < p.count; i++) {
       const x = p.getX(i);
       const z = p.getZ(i);
@@ -214,25 +216,24 @@ export function createWorld(canvas: HTMLCanvasElement, opts: { reduced: boolean 
       if (!jit.has(k)) jit.set(k, Math.abs(z - edgeZ) < 0.01 ? 0 : (rnd() - 0.5) * amp);
       p.setY(i, height(x, z) + jit.get(k)!);
     }
-    const grass = ['#a9b46a', '#b5bb72', '#9cab62', '#bcb978'];
-    const dry = ['#cdb97d', '#d6c088', '#c4ae74'];
-    const sand = ['#e3cc9c', '#ead6a8', '#dcc292'];
-    const rock = ['#a8989f', '#b2a3a9', '#9d8f99'];
-    const mauve = ['#b9a3b6', '#c2aebf', '#ad97ad'];
+    const sand = ['#eac391', '#e5bb86', '#efcb9a'];
+    const wet = ['#c9a47c', '#d1ad85'];
+    const crest = ['#f3d4a6', '#f0cf9f'];
+    const far = ['#dcb39a', '#d6ab95', '#e0bba2'];
     const geo = facet(g, (x, y, z) => {
-      if (y < -0.12) return vary('#c7b48e');
-      if (y < 0.32 && Math.abs(x - LAKE_X(z)) < LAKE_W(z) + 2.2) return vary(pick(sand));
-      if (y > 1.6 && x - LAKE_X(z) > 0 && z > -30) return vary(pick(rock));
-      if (z < -45) return vary(pick(mauve));
-      return vary(pick(rnd() > 0.75 ? dry : grass));
+      if (y < -0.12) return vary('#b99671', 0.04);
+      if (y < 0.3 && Math.abs(x - LAKE_X(z)) < LAKE_W(z) + 1.6) return vary(pick(wet), 0.04);
+      if (z < -40) return vary(pick(far), 0.04);
+      if (y > 1.3) return vary(pick(crest), 0.03);
+      return vary(pick(sand), 0.035);
     });
     const m = new THREE.Mesh(cullToV(geo), facetMat);
     m.receiveShadow = true;
     m.userData.keep = true;
     land.add(m);
   };
-  groundPiece(28, 0, 300, 70, -14); // devant, très fin : z de -14 à 14
-  groundPiece(84, -56, 70, 30, -14); // fond, grossier : z de -98 à -14
+  groundPiece(28, 0, 150, 32, -14); // devant : grandes facettes nettes
+  groundPiece(84, -56, 56, 26, -14); // fond, plus grossier
 
   // ---- eau
   const water = (() => {
@@ -251,246 +252,84 @@ export function createWorld(canvas: HTMLCanvasElement, opts: { reduced: boolean 
     return m;
   })();
 
-  // ---- montagnes lointaines
-  for (let i = 0; i < 14; i++) {
-    const h = range(5, 10);
-    const g = new THREE.ConeGeometry(range(6, 11), h, Math.floor(range(5, 8)), 2);
+  // ---- montagnes lointaines : de grands pics à facettes, sommets enneigés
+  for (let i = 0; i < 11; i++) {
+    const h = range(12, 24);
+    const rad = range(10, 18);
+    const g = new THREE.ConeGeometry(rad, h, 7, 4);
     const p = g.attributes.position as THREE.BufferAttribute;
-    for (let j = 0; j < p.count; j++) if (p.getY(j) > -h / 2 + 0.1 && p.getY(j) < h / 2 - 0.1) p.setX(j, p.getX(j) + range(-0.8, 0.8));
-    const m = new THREE.Mesh(facet(g, () => vary(pick(['#a9a6c6', '#b6aecb', '#9d9cbf']), 0.05)), facetMat);
-    m.position.set(range(-80, 80), h / 2 - 1.5, range(-100, -85));
+    for (let j = 0; j < p.count; j++) {
+      const y = p.getY(j);
+      if (y > -h / 2 + 0.1 && y < h / 2 - 0.1) p.setXYZ(j, p.getX(j) + range(-1.4, 1.4), y + range(-0.8, 0.8), p.getZ(j) + range(-1.4, 1.4));
+    }
+    const snow = range(0.15, 0.3);
+    const m = new THREE.Mesh(
+      facet(g, (_x, y) => (y > h / 2 - h * snow ? vary('#f3eee8', 0.03) : vary(pick(['#a9a3c6', '#b7a8c6', '#9e9bbf', '#c2a9bd']), 0.05))),
+      facetMat,
+    );
+    m.position.set(-90 + i * 18 + range(-6, 6), h / 2 - 3, range(-100, -78));
     m.rotation.y = rnd() * 6;
     land.add(m);
   }
 
-  // ---- falaises à droite (blocs empilés, comme des orgues)
-  for (let i = 0; i < 26; i++) {
-    const z = range(-40, -10);
-    const x = LAKE_X(z) + LAKE_W(z) + range(9, 16);
-    const h = range(0.8, 2.6) * smooth(-6, -18, z) + range(0.6, 1.2);
-    const g = new THREE.CylinderGeometry(range(0.8, 1.5), range(1.2, 2.2), h, Math.floor(range(5, 7)));
-    const m = new THREE.Mesh(facet(g, () => vary(pick(['#9d93ad', '#aaa0b8', '#8f88a6']), 0.07)), facetMat);
-    m.position.set(x, height(x, z) + h / 2 - 0.6, z);
-    m.rotation.y = rnd() * 6;
-    shadows(m, true, true);
-    land.add(m);
-  }
-
-  // ---- arbres
-  const trunkMat = solid('#7a5849');
-  const blossomTree = (x: number, z: number, s: number) => {
-    const lod = z > -12 ? 1 : 0;
-    const t = new THREE.Group();
-    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.14, 1.8, 5), trunkMat);
-    trunk.position.y = 0.9;
-    trunk.rotation.z = range(-0.1, 0.1);
-    t.add(trunk);
-    for (let k = 0; k < 2; k++) {
-      const br = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.06, 0.9, 5), trunkMat);
-      br.position.set(k ? -0.22 : 0.22, 1.55, range(-0.1, 0.1));
-      br.rotation.z = k ? 0.75 : -0.75;
-      t.add(br);
-    }
-    const n = Math.floor(range(4, 7));
-    for (let i = 0; i < n; i++) {
-      const r = range(0.38, 0.72);
-      const b = blob(r, lod, 1, range(0.8, 1), 1, () => vary(pick(['#f0a8bb', '#e898ae', '#f5bccb', '#dd8aa2']), 0.07));
-      b.position.set(range(-0.75, 0.75), range(1.75, 2.7), range(-0.5, 0.5));
-      b.rotation.set(rnd() * 3, rnd() * 3, 0);
-      t.add(b);
-    }
-    t.position.set(x, height(x, z) - 0.05, z);
-    t.scale.setScalar(s);
-    shadows(t, true, false);
-    land.add(t);
-    return t;
-  };
-  const eggTree = (x: number, z: number, s: number) => {
-    const lod = z > -12 ? 1 : 0;
-    const t = new THREE.Group();
-    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.09, 1, 5), trunkMat);
-    trunk.position.y = 0.5;
-    const top = blob(0.55, lod, 1, range(1.5, 2), 1, () => vary(pick(['#9ea559', '#b2a95c', '#8f9b56', '#c2b066']), 0.07));
-    top.position.y = 1.55;
-    t.add(trunk, top);
-    t.position.set(x, height(x, z) - 0.05, z);
-    t.scale.setScalar(s);
-    shadows(t, true, false);
-    land.add(t);
-    return t;
-  };
+  // ---- grands rochers : mesas et monolithes de grès, en couches
   const swaying: THREE.Object3D[] = [];
-  for (let i = 0; i < 48; i++) {
-    const z = range(-40, 9);
-    const side = rnd() > 0.45 ? 1 : -1;
-    const x = LAKE_X(z) + side * (LAKE_W(z) + range(2.4, side > 0 ? 11 : 18));
-    if (height(x, z) < 0.1 || (side < 0 && z > -6) || !clear(x, z)) continue;
-    const s = range(0.7, 1.15) * (z < -15 ? 1.4 : 1);
-    swaying.push(rnd() > 0.5 ? blossomTree(x, z, s) : eggTree(x, z, s));
-  }
-  // un grand arbre en fleurs qui encadre le tigre
-  swaying.push(blossomTree(HOME.x + 2.2, HOME.z - 2.6, 1.6));
-
-  // ---- rochers
-  const rockAt = (x: number, z: number, s: number, flat = 1) => {
-    const m = blob(s, 0, range(1, 1.6), range(0.5, 0.8) * flat, range(0.8, 1.2), () => vary(pick(['#a99a99', '#b8a9a4', '#9c8e90']), 0.08));
-    m.position.set(x, Math.max(height(x, z), -0.15) + s * 0.2, z);
-    m.rotation.y = rnd() * 6;
-    shadows(m, true, true);
-    land.add(m);
+  const mesa = (x: number, z: number, h: number, r: number) => {
+    const grp = new THREE.Group();
+    const layers = Math.max(2, Math.round(h / 1.6));
+    const rot = rnd() * 6;
+    const sides = Math.floor(range(6, 9));
+    let y = 0;
+    for (let k = 0; k < layers; k++) {
+      const lh = h / layers;
+      const rr = r * (1 - k * 0.12) * range(0.9, 1.05);
+      const g = new THREE.CylinderGeometry(rr * range(0.86, 0.94), rr, lh, sides, 1);
+      const p = g.attributes.position as THREE.BufferAttribute;
+      for (let j = 0; j < p.count; j++) p.setXYZ(j, p.getX(j) + range(-0.12, 0.12) * r, p.getY(j), p.getZ(j) + range(-0.12, 0.12) * r);
+      const base = pick(['#c98d6e', '#bf7f62', '#d39a7a', '#b8775c']);
+      const layer = new THREE.Mesh(facet(g, (_x, yy) => (yy > lh / 2 - 0.01 ? vary('#e0b493', 0.04) : vary(base, 0.06))), facetMat);
+      layer.position.y = y + lh / 2;
+      layer.rotation.y = rot + range(-0.08, 0.08);
+      grp.add(layer);
+      y += lh * 0.98;
+    }
+    grp.position.set(x, height(x, z) - 0.3, z);
+    shadows(grp, true, true);
+    land.add(grp);
   };
-  for (let i = 0; i < 60; i++) {
-    const z = range(-25, 12);
-    const x = LAKE_X(z) + (rnd() > 0.5 ? 1 : -1) * (LAKE_W(z) + range(-0.2, 9));
-    if (clear(x, z)) rockAt(x, z, range(0.15, 0.6));
-  }
-  for (let i = 0; i < 7; i++) {
-    const z = 3.5 + range(-0.4, 0.4);
-    rockAt(LAKE_X(z) - LAKE_W(z) + 0.4 + i * 0.5, z, 0.16, 0.6);
-  }
-
-  // ---- rochers en strates, comme des dalles empilées
+  // au loin, de part et d'autre du lac
   for (let i = 0; i < 9; i++) {
-    const z = range(-10, 8);
-    const side = i % 3 === 0 ? -1 : 1;
-    const x = LAKE_X(z) + side * (LAKE_W(z) + range(1.5, 6));
+    const z = range(-70, -22);
+    const side = rnd() > 0.35 ? 1 : -1;
+    const x = LAKE_X(z) + side * (LAKE_W(z) + range(4, 18));
+    mesa(x, z, range(4, 11), range(1.6, 3.4));
+  }
+  // plus près, quelques blocs qui cadrent la scène
+  mesa(HOME.x + 4.2, HOME.z - 5.5, 3.6, 1.4);
+  mesa(LAKE_X(-12) - LAKE_W(-12) - 4, -12, 3.2, 1.8);
+
+  // ---- dalles de pierre au bord de l'eau
+  for (let i = 0; i < 5; i++) {
+    const z = range(-10, 4);
+    const side = i % 2 ? -1 : 1;
+    const x = LAKE_X(z) + side * (LAKE_W(z) + range(0.2, 1.4));
     if (!clear(x, z)) continue;
     const grp = new THREE.Group();
     const n = Math.floor(range(2, 4));
     for (let k = 0; k < n; k++) {
-      const g = new THREE.BoxGeometry(range(1, 1.8) * (1 - k * 0.2), range(0.25, 0.4), range(0.7, 1.2) * (1 - k * 0.15), 2, 1, 2);
+      const g = new THREE.BoxGeometry(range(1.4, 2.4) * (1 - k * 0.2), range(0.3, 0.45), range(1, 1.6) * (1 - k * 0.15), 1, 1, 1);
       const pp = g.attributes.position as THREE.BufferAttribute;
-      for (let j = 0; j < pp.count; j++) pp.setXYZ(j, pp.getX(j) + range(-0.06, 0.06), pp.getY(j) + range(-0.03, 0.03), pp.getZ(j) + range(-0.06, 0.06));
-      const slab = new THREE.Mesh(facet(g, (_x, y) => vary(y > 0.1 ? '#b8a7a0' : '#9c8b88', 0.06)), facetMat);
-      slab.position.set(range(-0.15, 0.15), 0.15 + k * 0.3, range(-0.1, 0.1));
+      for (let j = 0; j < pp.count; j++) pp.setXYZ(j, pp.getX(j) + range(-0.1, 0.1), pp.getY(j) + range(-0.04, 0.04), pp.getZ(j) + range(-0.1, 0.1));
+      const slab = new THREE.Mesh(facet(g, (_x, y) => vary(y > 0.1 ? '#d6a785' : '#b98466', 0.05)), facetMat);
+      slab.position.set(range(-0.2, 0.2), 0.1 + k * 0.36, range(-0.15, 0.15));
       slab.rotation.y = range(-0.3, 0.3);
       grp.add(slab);
     }
-    grp.position.set(x, height(x, z) - 0.05, z);
+    grp.position.set(x, Math.max(height(x, z), -0.4) - 0.1, z);
     grp.rotation.y = rnd() * 6;
-    grp.scale.setScalar(range(0.6, 1.1));
     shadows(grp, true, true);
     land.add(grp);
   }
-
-  // ---- buissons
-  for (let i = 0; i < 40; i++) {
-    const z = range(-16, 10);
-    const x = LAKE_X(z) + (rnd() > 0.4 ? 1 : -1) * (LAKE_W(z) + range(1.2, 9));
-    if (height(x, z) < 0.12 || !clear(x, z)) continue;
-    const b = new THREE.Group();
-    const col = pick(['#8e9d55', '#a2a85c', '#7f9150']);
-    for (let k = 0; k < 3; k++) {
-      const m = blob(range(0.22, 0.38), 1, 1, 0.75, 1, () => vary(col, 0.08));
-      m.position.set(range(-0.25, 0.25), 0.12, range(-0.2, 0.2));
-      b.add(m);
-    }
-    b.position.set(x, height(x, z), z);
-    shadows(b, true, false);
-    land.add(b);
-  }
-
-  // ---- fleurs dans l'herbe (instanciées)
-  {
-    const g = new THREE.IcosahedronGeometry(0.06, 0);
-    const m = new THREE.InstancedMesh(g, solid('#ffffff', { emissive: '#ffffff', emissiveIntensity: 0.08 }), 320);
-    const o = new THREE.Object3D();
-    let n = 0;
-    for (let i = 0; i < 2000 && n < 320; i++) {
-      const z = range(-8, 11);
-      const x = V_CX + range(-1, 1) * (0.56 * (CAM_Z - z));
-      const y = height(x, z);
-      if (y < 0.2 || Math.abs(x - LAKE_X(z)) < LAKE_W(z) + 1.2) continue;
-      o.position.set(x, y + 0.08, z);
-      o.scale.setScalar(range(0.7, 1.3));
-      o.updateMatrix();
-      m.setMatrixAt(n, o.matrix);
-      m.setColorAt(n, vary(pick(['#fff6e8', '#ffd86a', '#f6a9bd', '#f3e7ff']), 0.04));
-      n++;
-    }
-    m.count = n;
-    land.add(m);
-  }
-
-  // ---- nénuphars et massettes au bord de l'eau
-  for (let i = 0; i < 34; i++) {
-    const z = range(-6, 9);
-    const side = rnd() > 0.5 ? 1 : -1;
-    const x = LAKE_X(z) + side * (LAKE_W(z) - range(0.3, 1.4));
-    const pad = new THREE.Mesh(new THREE.CylinderGeometry(range(0.12, 0.22), range(0.12, 0.22), 0.02, 7), solid(pick(['#7f9b56', '#93a95e', '#6f8c4f'])));
-    pad.position.set(x, 0.0, z);
-    pad.rotation.y = rnd() * 6;
-    land.add(pad);
-    if (rnd() > 0.7) {
-      const fl = blob(0.05, 0, 1, 0.7, 1, () => vary('#f7c2d0', 0.04));
-      fl.position.set(x, 0.04, z);
-      land.add(fl);
-    }
-  }
-  for (let i = 0; i < 46; i++) {
-    const z = range(-8, 9);
-    const side = rnd() > 0.5 ? 1 : -1;
-    const x = LAKE_X(z) + side * (LAKE_W(z) + range(-0.4, 0.3));
-    const h = range(0.6, 1.1);
-    const c = new THREE.Group();
-    const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.016, h, 4), solid('#8d9a52'));
-    stem.position.y = h / 2;
-    const head = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.16, 5), solid('#7a5136'));
-    head.position.y = h - 0.05;
-    c.add(stem, head);
-    c.position.set(x, Math.max(height(x, z), -0.2), z);
-    c.rotation.set(range(-0.15, 0.15), 0, range(-0.15, 0.15));
-    swaying.push(c);
-    land.add(c);
-  }
-
-  // ---- roseaux et herbes (instanciés)
-  const blades = (count: number, place: () => [number, number] | null, colors: string[], hRange: [number, number], wid: number) => {
-    const g = new THREE.ConeGeometry(wid, 1, 3);
-    g.translate(0, 0.5, 0);
-    const m = new THREE.InstancedMesh(g, solid('#ffffff'), count);
-    const o = new THREE.Object3D();
-    let n = 0;
-    for (let i = 0; i < count * 3 && n < count; i++) {
-      const at = place();
-      if (!at || !inV(at[0], at[1], 0)) continue;
-      const [x, z] = at;
-      o.position.set(x, Math.max(height(x, z), -0.3), z);
-      o.rotation.set(range(-0.35, 0.35), rnd() * 6, range(-0.35, 0.35));
-      o.scale.set(1, range(...hRange), 1);
-      o.updateMatrix();
-      m.setMatrixAt(n, o.matrix);
-      m.setColorAt(n, vary(pick(colors), 0.08));
-      n++;
-    }
-    m.count = n;
-    m.castShadow = true;
-    land.add(m);
-    return m;
-  };
-  blades(
-    700,
-    () => {
-      const z = range(-14, 10);
-      return [LAKE_X(z) + (rnd() > 0.5 ? 1 : -1) * (LAKE_W(z) + range(-0.25, 0.7)), z];
-    },
-    ['#a7a65a', '#c1ad62', '#8f9a52', '#d0b66c'],
-    [0.35, 0.9],
-    0.035,
-  );
-  blades(
-    2200,
-    () => {
-      const z = range(-8, 12);
-      const x = V_CX + range(-1, 1) * (0.56 * (CAM_Z - z));
-      return height(x, z) > 0.15 ? [x, z] : null;
-    },
-    ['#a8b064', '#c3b469', '#93a35b'],
-    [0.2, 0.45],
-    0.03,
-  );
-  // grandes herbes au premier plan : floues, elles donnent la profondeur
-  const front = blades(26, () => [range(2, 20), range(12, 13.6)], ['#7f9447', '#a4a24f', '#c2a45b', '#8c8a3e'], [0.9, 1.8], 0.08);
 
   // ---- nuages : de longues nappes à facettes
   const clouds: THREE.Mesh[] = [];
@@ -663,7 +502,6 @@ export function createWorld(canvas: HTMLCanvasElement, opts: { reduced: boolean 
         u.l.rotation.z = f;
         u.r.rotation.z = -f;
       });
-      front.rotation.z = Math.sin(t * 0.7) * 0.006;
     }
     birds.forEach((b) => (b.visible = n < 0.6));
     cloudMat.opacity = 0.92 - n * 0.6;
