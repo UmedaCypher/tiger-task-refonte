@@ -6,7 +6,7 @@ import { needsOnboarding, Onboarding } from './components/Onboarding';
 import { openPaywall, PaywallHost } from './components/Paywall';
 import { COL_LETTERS, Sheet, useColumns } from './components/Sheet';
 import { Stage } from './components/Stage';
-import { Mascot, Scene } from './scene/Scene';
+import { Mascot } from './scene/Scene';
 import { LoginHost, openLogin } from './components/Login';
 import { MonthNav } from './components/MonthNav';
 import { addDays, todayKey, type DayKey } from './lib/date';
@@ -247,7 +247,6 @@ export function App() {
         </main>
       ) : (
         <main className="stage-main">
-          <Scene night={mode === 'night'} />
           <Stage openDay={openDay} setOpenDay={setOpenDay} lockBefore={lockBefore} onLocked={() => openPaywall('history')}>
             <Mascot />
           </Stage>

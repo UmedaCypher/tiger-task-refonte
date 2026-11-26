@@ -123,7 +123,6 @@ if (heroCanvas && demo) {
   const bubble = document.querySelector<HTMLElement>('.hero-mascot .tiger-bubble');
   const mascotCanvas = document.querySelector<HTMLCanvasElement>('.hero-mascot-canvas');
   const done = new Set<number>();
-  let world: { setState(s: { progress: number; mood: 'sleep' | 'awake' | 'free'; night: boolean }): void } | null = null;
   let mascot: { setMood(m: 'sleep' | 'awake' | 'free'): void; perk(): void } | null = null;
 
   const render = () => {
@@ -161,7 +160,6 @@ if (heroCanvas && demo) {
       }
     }
     const mood = k === n ? 'free' : r >= 0.3 ? 'awake' : 'sleep';
-    world?.setState({ progress: r, mood, night: false });
     mascot?.setMood(mood);
   };
 
@@ -197,13 +195,6 @@ if (heroCanvas && demo) {
 
   // le décor et la mascotte arrivent après le texte : la page reste instantanée
   setTimeout(() => {
-    import('../scene/world')
-      .then(({ createWorld }) => {
-        world = createWorld(heroCanvas, { reduced: reduce, biome: (new URLSearchParams(location.search).get('biome') ?? 'lac') as never });
-        document.querySelector('.hero-scene')?.classList.add('is-ready');
-        render();
-      })
-      .catch(() => {});
     if (mascotCanvas)
       import('../scene/mascot')
         .then(({ createMascot }) => {
