@@ -87,6 +87,12 @@ type Palette = typeof MOODS.dawn;
 
 const LAKE_X = (z: number) => 0.6 + Math.sin(z * 0.09 + 0.6) * 2.6;
 const LAKE_W = (z: number) => 1.7 + Math.max(0, 6 - z) * 0.11 + Math.max(0, -z - 12) * 0.35;
+const SHORE = (z: number) => LAKE_X(z) + LAKE_W(z) + 1.35;
+const HOME = { x: SHORE(5.6) + 1.2, z: 5.6 }; // la place du tigre, près du grand arbre
+const PATH = { z: 5.9, a: SHORE(5.9) - 0.2, b: SHORE(5.9) + 3.6 }; // la rive qu'il arpente
+/** Garde dégagés la place du tigre et son chemin, pour qu'aucun objet ne le cache */
+const clear = (x: number, z: number) =>
+  Math.hypot(x - HOME.x, z - HOME.z) > 2.4 && !(z > PATH.z - 1.6 && z < PATH.z + 3.5 && x > PATH.a - 1.2 && x < PATH.b + 1.6);
 function height(x: number, z: number) {
   const dx = Math.abs(x - LAKE_X(z));
   const w = LAKE_W(z);
@@ -158,18 +164,20 @@ export function createWorld(canvas: HTMLCanvasElement, opts: { reduced: boolean 
   sun.shadow.normalBias = 0.03;
   scene.add(sun, sun.target);
 
-  // ---- sol
-  {
-    const g = new THREE.PlaneGeometry(140, 110, 120, 90).toNonIndexed();
+  // ---- sol : fin au premier plan, grossier au loin (le flou et la brume font le reste)
+  const groundPiece = (depth: number, zCenter: number, segX: number, segZ: number, edgeZ: number) => {
+    const g = new THREE.PlaneGeometry(140, depth, segX, segZ).toNonIndexed();
     g.rotateX(-Math.PI / 2);
-    g.translate(0, 0, -41);
+    g.translate(0, 0, zCenter);
     const p = g.attributes.position as THREE.BufferAttribute;
     const jit = new Map<string, number>();
+    const amp = segX > 100 ? 0.12 : 0.22;
     for (let i = 0; i < p.count; i++) {
       const x = p.getX(i);
       const z = p.getZ(i);
       const k = `${x.toFixed(2)}:${z.toFixed(2)}`;
-      if (!jit.has(k)) jit.set(k, (rnd() - 0.5) * 0.18);
+      // pas de relief aléatoire sur la couture entre les deux morceaux
+      if (!jit.has(k)) jit.set(k, Math.abs(z - edgeZ) < 0.01 ? 0 : (rnd() - 0.5) * amp);
       p.setY(i, height(x, z) + jit.get(k)!);
     }
     const grass = ['#a9b46a', '#b5bb72', '#9cab62', '#bcb978'];
@@ -184,10 +192,12 @@ export function createWorld(canvas: HTMLCanvasElement, opts: { reduced: boolean 
       if (z < -45) return vary(pick(mauve));
       return vary(pick(rnd() > 0.75 ? dry : grass));
     });
-    const ground = new THREE.Mesh(geo, facetMat);
-    ground.receiveShadow = true;
-    land.add(ground);
-  }
+    const m = new THREE.Mesh(geo, facetMat);
+    m.receiveShadow = true;
+    land.add(m);
+  };
+  groundPiece(28, 0, 200, 48, -14); // devant : z de -14 à 14
+  groundPiece(84, -56, 56, 26, -14); // fond : z de -98 à -14
 
   // ---- eau
   const water = (() => {
@@ -232,16 +242,23 @@ export function createWorld(canvas: HTMLCanvasElement, opts: { reduced: boolean 
   // ---- arbres
   const trunkMat = solid('#7a5849');
   const blossomTree = (x: number, z: number, s: number) => {
+    const lod = z > -12 ? 1 : 0;
     const t = new THREE.Group();
     const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.14, 1.8, 5), trunkMat);
     trunk.position.y = 0.9;
     trunk.rotation.z = range(-0.1, 0.1);
     t.add(trunk);
-    const n = Math.floor(range(3, 6));
+    for (let k = 0; k < 2; k++) {
+      const br = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.06, 0.9, 5), trunkMat);
+      br.position.set(k ? -0.22 : 0.22, 1.55, range(-0.1, 0.1));
+      br.rotation.z = k ? 0.75 : -0.75;
+      t.add(br);
+    }
+    const n = Math.floor(range(4, 7));
     for (let i = 0; i < n; i++) {
-      const r = range(0.45, 0.8);
-      const b = blob(r, 1, 1, range(0.8, 1), 1, () => vary(pick(['#f0a8bb', '#e898ae', '#f5bccb', '#dd8aa2']), 0.07));
-      b.position.set(range(-0.6, 0.6), range(1.8, 2.6), range(-0.4, 0.4));
+      const r = range(0.38, 0.72);
+      const b = blob(r, lod, 1, range(0.8, 1), 1, () => vary(pick(['#f0a8bb', '#e898ae', '#f5bccb', '#dd8aa2']), 0.07));
+      b.position.set(range(-0.75, 0.75), range(1.75, 2.7), range(-0.5, 0.5));
       b.rotation.set(rnd() * 3, rnd() * 3, 0);
       t.add(b);
     }
@@ -252,10 +269,11 @@ export function createWorld(canvas: HTMLCanvasElement, opts: { reduced: boolean 
     return t;
   };
   const eggTree = (x: number, z: number, s: number) => {
+    const lod = z > -12 ? 1 : 0;
     const t = new THREE.Group();
     const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.09, 1, 5), trunkMat);
     trunk.position.y = 0.5;
-    const top = blob(0.55, 1, 1, range(1.5, 2), 1, () => vary(pick(['#9ea559', '#b2a95c', '#8f9b56', '#c2b066']), 0.07));
+    const top = blob(0.55, lod, 1, range(1.5, 2), 1, () => vary(pick(['#9ea559', '#b2a95c', '#8f9b56', '#c2b066']), 0.07));
     top.position.y = 1.55;
     t.add(trunk, top);
     t.position.set(x, height(x, z) - 0.05, z);
@@ -269,12 +287,12 @@ export function createWorld(canvas: HTMLCanvasElement, opts: { reduced: boolean 
     const z = range(-40, 9);
     const side = rnd() > 0.45 ? 1 : -1;
     const x = LAKE_X(z) + side * (LAKE_W(z) + range(2.4, side > 0 ? 11 : 18));
-    if (height(x, z) < 0.1 || (side < 0 && z > -6)) continue;
+    if (height(x, z) < 0.1 || (side < 0 && z > -6) || !clear(x, z)) continue;
     const s = range(0.7, 1.15) * (z < -15 ? 1.4 : 1);
     swaying.push(rnd() > 0.5 ? blossomTree(x, z, s) : eggTree(x, z, s));
   }
   // un grand arbre en fleurs qui encadre le tigre
-  swaying.push(blossomTree(LAKE_X(6) + LAKE_W(6) + 4.4, 5.2, 1.6));
+  swaying.push(blossomTree(HOME.x + 2.2, HOME.z - 2.6, 1.6));
 
   // ---- rochers
   const rockAt = (x: number, z: number, s: number, flat = 1) => {
@@ -287,11 +305,106 @@ export function createWorld(canvas: HTMLCanvasElement, opts: { reduced: boolean 
   for (let i = 0; i < 60; i++) {
     const z = range(-25, 12);
     const x = LAKE_X(z) + (rnd() > 0.5 ? 1 : -1) * (LAKE_W(z) + range(-0.2, 9));
-    rockAt(x, z, range(0.15, 0.6));
+    if (clear(x, z)) rockAt(x, z, range(0.15, 0.6));
   }
   for (let i = 0; i < 7; i++) {
     const z = 3.5 + range(-0.4, 0.4);
     rockAt(LAKE_X(z) - LAKE_W(z) + 0.4 + i * 0.5, z, 0.16, 0.6);
+  }
+
+  // ---- rochers en strates, comme des dalles empilées
+  for (let i = 0; i < 9; i++) {
+    const z = range(-10, 8);
+    const side = i % 3 === 0 ? -1 : 1;
+    const x = LAKE_X(z) + side * (LAKE_W(z) + range(1.5, 6));
+    if (!clear(x, z)) continue;
+    const grp = new THREE.Group();
+    const n = Math.floor(range(2, 4));
+    for (let k = 0; k < n; k++) {
+      const g = new THREE.BoxGeometry(range(1, 1.8) * (1 - k * 0.2), range(0.25, 0.4), range(0.7, 1.2) * (1 - k * 0.15), 2, 1, 2);
+      const pp = g.attributes.position as THREE.BufferAttribute;
+      for (let j = 0; j < pp.count; j++) pp.setXYZ(j, pp.getX(j) + range(-0.06, 0.06), pp.getY(j) + range(-0.03, 0.03), pp.getZ(j) + range(-0.06, 0.06));
+      const slab = new THREE.Mesh(facet(g, (_x, y) => vary(y > 0.1 ? '#b8a7a0' : '#9c8b88', 0.06)), facetMat);
+      slab.position.set(range(-0.15, 0.15), 0.15 + k * 0.3, range(-0.1, 0.1));
+      slab.rotation.y = range(-0.3, 0.3);
+      grp.add(slab);
+    }
+    grp.position.set(x, height(x, z) - 0.05, z);
+    grp.rotation.y = rnd() * 6;
+    grp.scale.setScalar(range(0.6, 1.1));
+    shadows(grp, true, true);
+    land.add(grp);
+  }
+
+  // ---- buissons
+  for (let i = 0; i < 40; i++) {
+    const z = range(-16, 10);
+    const x = LAKE_X(z) + (rnd() > 0.4 ? 1 : -1) * (LAKE_W(z) + range(1.2, 9));
+    if (height(x, z) < 0.12 || !clear(x, z)) continue;
+    const b = new THREE.Group();
+    const col = pick(['#8e9d55', '#a2a85c', '#7f9150']);
+    for (let k = 0; k < 3; k++) {
+      const m = blob(range(0.22, 0.38), 1, 1, 0.75, 1, () => vary(col, 0.08));
+      m.position.set(range(-0.25, 0.25), 0.12, range(-0.2, 0.2));
+      b.add(m);
+    }
+    b.position.set(x, height(x, z), z);
+    shadows(b, true, false);
+    land.add(b);
+  }
+
+  // ---- fleurs dans l'herbe (instanciées)
+  {
+    const g = new THREE.IcosahedronGeometry(0.06, 0);
+    const m = new THREE.InstancedMesh(g, solid('#ffffff', { emissive: '#ffffff', emissiveIntensity: 0.08 }), 320);
+    const o = new THREE.Object3D();
+    let n = 0;
+    for (let i = 0; i < 900 && n < 320; i++) {
+      const z = range(-8, 11);
+      const x = range(-12, 16);
+      const y = height(x, z);
+      if (y < 0.2 || Math.abs(x - LAKE_X(z)) < LAKE_W(z) + 1.2) continue;
+      o.position.set(x, y + 0.08, z);
+      o.scale.setScalar(range(0.7, 1.3));
+      o.updateMatrix();
+      m.setMatrixAt(n, o.matrix);
+      m.setColorAt(n, vary(pick(['#fff6e8', '#ffd86a', '#f6a9bd', '#f3e7ff']), 0.04));
+      n++;
+    }
+    m.count = n;
+    land.add(m);
+  }
+
+  // ---- nénuphars et massettes au bord de l'eau
+  for (let i = 0; i < 34; i++) {
+    const z = range(-6, 9);
+    const side = rnd() > 0.5 ? 1 : -1;
+    const x = LAKE_X(z) + side * (LAKE_W(z) - range(0.3, 1.4));
+    const pad = new THREE.Mesh(new THREE.CylinderGeometry(range(0.12, 0.22), range(0.12, 0.22), 0.02, 7), solid(pick(['#7f9b56', '#93a95e', '#6f8c4f'])));
+    pad.position.set(x, 0.0, z);
+    pad.rotation.y = rnd() * 6;
+    land.add(pad);
+    if (rnd() > 0.7) {
+      const fl = blob(0.05, 0, 1, 0.7, 1, () => vary('#f7c2d0', 0.04));
+      fl.position.set(x, 0.04, z);
+      land.add(fl);
+    }
+  }
+  for (let i = 0; i < 46; i++) {
+    const z = range(-8, 9);
+    const side = rnd() > 0.5 ? 1 : -1;
+    const x = LAKE_X(z) + side * (LAKE_W(z) + range(-0.4, 0.3));
+    const h = range(0.6, 1.1);
+    const c = new THREE.Group();
+    const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.016, h, 4), solid('#8d9a52'));
+    stem.position.y = h / 2;
+    const head = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.16, 5), solid('#7a5136'));
+    head.position.y = h - 0.05;
+    c.add(stem, head);
+    c.position.set(x, Math.max(height(x, z), -0.2), z);
+    c.rotation.set(range(-0.15, 0.15), 0, range(-0.15, 0.15));
+    swaying.push(c);
+    land.add(c);
   }
 
   // ---- roseaux et herbes (instanciés)
@@ -329,7 +442,7 @@ export function createWorld(canvas: HTMLCanvasElement, opts: { reduced: boolean 
     0.035,
   );
   blades(
-    500,
+    1100,
     () => {
       const z = range(-6, 11);
       const x = range(-14, 16);
@@ -389,9 +502,8 @@ export function createWorld(canvas: HTMLCanvasElement, opts: { reduced: boolean 
   const T = buildTiger();
   const tiger = T.root;
   land.add(tiger);
-  const shore = (z: number) => LAKE_X(z) + LAKE_W(z) + 1.35;
-  const home = { x: shore(5.6) + 1.2, z: 5.6 }; // sa place pour dormir, près du grand arbre
-  const path = { z: 5.9, a: shore(5.9) - 0.2, b: shore(5.9) + 3.6 }; // la rive qu'il arpente
+  const home = HOME;
+  const path = PATH;
   const tg = { x: home.x, z: home.z, heading: Math.PI, lie: 1, walk: 0, phase: 0, perk: 0, dir: 1, pause: 0, look: 0, lookUp: 0 };
   tiger.position.set(home.x, height(home.x, home.z), home.z);
   let focus: THREE.Object3D = T.head; // ce que la mise au point et la bulle suivent
@@ -670,143 +782,228 @@ interface Pose {
   happy: boolean;
 }
 
-function buildTiger() {
-  const ORANGE = '#f0822f';
-  const DEEP = '#d86a22';
-  const CREAM = '#fff1e0';
-  const STRIPE = '#2e1d16';
-  // rayures : des bandes verticales qui ondulent, ventre crème
-  const fur = (freq: number, phase: number, bellyY: number) => (x: number, y: number, z: number) => {
-    if (y < bellyY) return vary(CREAM, 0.04);
-    const band = Math.sin(x * freq + phase + Math.sin(y * 6 + z * 2) * 0.5);
-    if (band > 0.82 && y > bellyY + 0.05) return STRIPE;
-    return vary(y > 0.1 ? ORANGE : DEEP, 0.05);
+/** Un volume « extrudé » le long de x : une suite d'ellipses [x, centreY, rayonY, rayonZ] reliées par des facettes */
+function loft(rings: [number, number, number, number][], seg = 12, wobble = 0.012) {
+  const pts: THREE.Vector3[][] = rings.map(([x, cy, ry, rz], ri) =>
+    Array.from({ length: seg }, (_, i) => {
+      const a = (i / seg) * Math.PI * 2 + (ri % 2) * (Math.PI / seg);
+      const n = ri === 0 || ri === rings.length - 1 ? 0 : (rnd() - 0.5) * wobble;
+      return new THREE.Vector3(x + n, cy + Math.sin(a) * (ry + n), Math.cos(a) * (rz + n));
+    }),
+  );
+  const v: number[] = [];
+  const tri = (a: THREE.Vector3, b: THREE.Vector3, c: THREE.Vector3) => v.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z);
+  for (let r = 0; r < pts.length - 1; r++)
+    for (let i = 0; i < seg; i++) {
+      const a = pts[r][i], b = pts[r][(i + 1) % seg], c = pts[r + 1][i], d = pts[r + 1][(i + 1) % seg];
+      tri(a, c, b);
+      tri(b, c, d);
+    }
+  const cap = (ring: THREE.Vector3[], flip: boolean) => {
+    const ctr = ring.reduce((s, p) => s.add(p), new THREE.Vector3()).divideScalar(ring.length);
+    for (let i = 0; i < seg; i++) (flip ? tri(ctr, ring[(i + 1) % seg], ring[i]) : tri(ctr, ring[i], ring[(i + 1) % seg]));
   };
-  const part = (r: number, sx: number, sy: number, sz: number, color: (x: number, y: number, z: number) => THREE.ColorRepresentation, detail = 1) =>
-    blob(r, detail, sx, sy, sz, color);
+  cap(pts[0], false);
+  cap(pts[pts.length - 1], true);
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(v, 3));
+  return g;
+}
+
+function buildTiger() {
+  const ORANGE = '#ee8a3a';
+  const DEEP = '#d9702a';
+  const WHITE = '#f6efe6';
+  const STRIPE = '#2a1b16';
+  const mesh = (g: THREE.BufferGeometry, color: (x: number, y: number, z: number) => THREE.ColorRepresentation) => new THREE.Mesh(facet(g, color), facetMat);
+  // rayures en chevrons qui partent du dos et s'affinent vers le ventre
+  const coat = (freq: number, phase: number, belly: number, top: number) => (x: number, y: number, z: number) => {
+    if (y < belly) return vary(WHITE, 0.03);
+    const h = (y - belly) / (top - belly); // 0 au ventre, 1 au dos
+    const wave = x * freq + phase + Math.abs(z) * 3.2 + Math.sin(y * 9) * 0.35;
+    const band = Math.sin(wave);
+    if (band > 0.96 - h * 0.14 && h > 0.25) return vary(STRIPE, 0.02);
+    return vary(h > 0.45 ? ORANGE : DEEP, 0.045);
+  };
 
   const root = new THREE.Group();
-  const body = new THREE.Group(); // descend quand il se couche
+  const body = new THREE.Group();
   root.add(body);
 
+  // hanches et poitrail : deux volumes sculptés qui se chevauchent, pour que le dos se plie en marchant
   const hips = new THREE.Group();
-  hips.position.set(0.5, 1.04, 0);
-  hips.add(part(1, 0.56, 0.34, 0.32, fur(11, 0.3, -0.2), 2));
+  hips.position.set(0.48, 1.06, 0);
+  hips.add(
+    mesh(
+      loft([
+        [-0.42, -0.02, 0.27, 0.25],
+        [-0.15, 0, 0.31, 0.28],
+        [0.12, 0.04, 0.35, 0.31],
+        [0.34, 0.03, 0.34, 0.3],
+        [0.52, -0.02, 0.26, 0.24],
+        [0.62, -0.05, 0.13, 0.13],
+      ], 14),
+      coat(15, 0.4, -0.2, 0.36),
+    ),
+  );
   const chest = new THREE.Group();
-  chest.position.set(-0.42, 1.08, 0);
-  chest.add(part(1, 0.58, 0.39, 0.36, fur(11, 1.4, -0.23), 2));
-  const waist = part(1, 0.6, 0.31, 0.3, fur(11, 0.9, -0.19), 1);
-  waist.position.set(0.04, 1.05, 0);
-  body.add(hips, chest, waist);
+  chest.position.set(-0.4, 1.08, 0);
+  chest.add(
+    mesh(
+      loft([
+        [0.44, -0.02, 0.27, 0.25],
+        [0.2, 0.02, 0.33, 0.3],
+        [-0.02, 0.07, 0.4, 0.34],
+        [-0.22, 0.05, 0.41, 0.34],
+        [-0.42, 0, 0.35, 0.3],
+        [-0.56, -0.04, 0.2, 0.2],
+      ], 14),
+      (x, y, z) => (x < -0.36 && y < 0.12 ? vary(WHITE, 0.03) : coat(14, 1.6, -0.22, 0.45)(x, y, z)),
+    ),
+  );
+  body.add(hips, chest);
 
   // cou et tête
   const neck = new THREE.Group();
-  neck.position.set(-0.42, 0.16, 0);
+  neck.position.set(-0.44, 0.12, 0);
   chest.add(neck);
-  const neckMesh = part(1, 0.26, 0.3, 0.27, fur(14, 0, -0.18), 1);
-  neckMesh.position.set(-0.1, 0.05, 0);
-  neckMesh.rotation.z = 0.5;
+  const neckMesh = mesh(
+    loft([
+      [0.12, -0.04, 0.27, 0.25],
+      [-0.08, 0.02, 0.26, 0.24],
+      [-0.28, 0.07, 0.22, 0.21],
+    ], 12),
+    (x, y, z) => (y < -0.06 ? vary(WHITE, 0.03) : coat(18, 0.2, -0.1, 0.3)(x, y, z)),
+  );
   neck.add(neckMesh);
   const head = new THREE.Group();
-  head.position.set(-0.3, 0.14, 0);
+  head.position.set(-0.32, 0.12, 0);
   neck.add(head);
-  const skull = part(
-    1,
-    0.34,
-    0.3,
-    0.33,
-    (x, y, z) => {
-      if (y < -0.1 || (x < -0.18 && y < 0.02)) return vary(CREAM, 0.03);
-      if (y > 0.12 && Math.abs(z) < 0.12 && Math.sin(z * 40) > 0.4) return STRIPE;
-      if (Math.abs(z) > 0.2 && Math.sin(y * 30) > 0.6 && x > -0.1) return STRIPE;
-      return vary(ORANGE, 0.05);
-    },
-    2,
+  head.add(
+    mesh(
+      loft([
+        [0.22, 0.02, 0.17, 0.19],
+        [0.12, 0.04, 0.27, 0.3],
+        [-0.02, 0.03, 0.3, 0.33],
+        [-0.16, 0, 0.26, 0.28],
+        [-0.27, -0.04, 0.17, 0.2],
+        [-0.37, -0.06, 0.11, 0.14],
+        [-0.43, -0.07, 0.05, 0.07],
+      ], 14),
+      (x, y, z) => {
+        const az = Math.abs(z);
+        if (y < -0.1) return vary(WHITE, 0.03); // menton
+        if (x < -0.24 && y < 0.03) return vary(WHITE, 0.03); // museau
+        if (x < -0.02 && x > -0.26 && az > 0.18 && y < 0.05) return vary(WHITE, 0.03); // joues
+        if (x < -0.06 && x > -0.2 && y > 0.07 && y < 0.15 && az > 0.07 && az < 0.22) return vary(WHITE, 0.03); // sourcils
+        if (y > 0.14 && Math.sin(az * 48 + x * 6) > 0.55) return STRIPE; // front
+        if (az > 0.22 && Math.sin(y * 34 - x * 9) > 0.6 && x > -0.12) return STRIPE; // tempes
+        return vary(x < -0.2 ? DEEP : ORANGE, 0.04);
+      },
+    ),
   );
-  head.add(skull);
-  const muzzle = part(1, 0.18, 0.12, 0.19, () => vary(CREAM, 0.03));
-  muzzle.position.set(-0.27, -0.09, 0);
-  head.add(muzzle);
-  const nose = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.05, 0.08), solid('#3b2320'));
-  nose.position.set(-0.43, -0.03, 0);
+  const nose = new THREE.Mesh(new THREE.ConeGeometry(0.055, 0.06, 3).rotateZ(Math.PI / 2).rotateX(Math.PI / 6), solid('#b96a62'));
+  nose.position.set(-0.44, -0.035, 0);
   head.add(nose);
   const jaw = new THREE.Group();
-  jaw.position.set(-0.08, -0.15, 0);
-  const jawMesh = part(1, 0.15, 0.05, 0.12, () => vary(CREAM, 0.03));
-  jawMesh.position.x = -0.1;
+  jaw.position.set(-0.1, -0.14, 0);
+  const jawMesh = mesh(loft([[0.02, 0, 0.05, 0.13], [-0.14, -0.01, 0.05, 0.1], [-0.26, 0, 0.03, 0.05]], 10), () => vary(WHITE, 0.03));
   jaw.add(jawMesh);
   head.add(jaw);
+  // collerette blanche : des mèches qui pointent vers l'arrière
   [1, -1].forEach((s) => {
-    const ruff = part(1, 0.12, 0.13, 0.08, () => vary(CREAM, 0.04));
-    ruff.position.set(0.0, -0.11, 0.25 * s);
-    head.add(ruff);
+    for (let i = 0; i < 3; i++) {
+      const tuft = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.2, 4), solid(i === 1 ? '#efe4d6' : WHITE));
+      tuft.position.set(0.04 + i * 0.03, -0.06 - i * 0.05, 0.27 * s);
+      tuft.rotation.set(0.9 * s, 0, -1.9 + i * 0.25);
+      head.add(tuft);
+    }
   });
   const ears: THREE.Group[] = [];
   const eyes: THREE.Mesh[] = [];
   [1, -1].forEach((s) => {
     const ear = new THREE.Group();
-    ear.position.set(0.04, 0.23, 0.17 * s);
-    const outer = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.15, 4), solid(ORANGE));
-    outer.position.y = 0.06;
-    const tip = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.06, 4), solid(STRIPE));
-    tip.position.y = 0.12;
-    ear.add(outer, tip);
-    ear.rotation.x = 0.25 * s;
+    ear.position.set(0.06, 0.25, 0.17 * s);
+    const outer = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.17, 5), solid(STRIPE));
+    outer.position.y = 0.07;
+    const inner = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.12, 5), solid(WHITE));
+    inner.position.set(-0.03, 0.06, 0);
+    ear.add(outer, inner);
+    ear.rotation.x = 0.3 * s;
     ears.push(ear);
     head.add(ear);
-    const eye = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.045, 0.03), solid('#2a2a12', { emissive: '#4a3a10', emissiveIntensity: 0.3 }));
-    eye.position.set(-0.25, 0.07, 0.15 * s);
-    eye.rotation.y = -0.4 * s;
-    eyes.push(eye);
+    const eye = new THREE.Group();
+    const iris = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.045, 0.02), solid('#e0a83a', { emissive: '#6a4a10', emissiveIntensity: 0.4 }));
+    const pupil = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.04, 0.022), solid('#1a120e'));
+    pupil.position.x = -0.005;
+    const lid = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.012, 0.024), solid(STRIPE));
+    lid.position.y = 0.026;
+    eye.add(iris, pupil, lid);
+    eye.position.set(-0.24, 0.08, 0.17 * s);
+    eye.rotation.y = -0.55 * s;
+    eyes.push(iris, pupil);
     head.add(eye);
   });
 
-  // pattes : hanche → genou → cheville → pied
-  interface Leg {
-    hip: THREE.Group;
-    knee: THREE.Group;
-    ankle: THREE.Group;
-    front: boolean;
-    offset: number;
-  }
+  // pattes : cuisse musclée → jambe → patte avec doigts et griffes
+  interface Leg { hip: THREE.Group; knee: THREE.Group; ankle: THREE.Group; front: boolean; offset: number }
   const legs: Leg[] = [];
+  const limb = (rings: [number, number, number, number][], color: (x: number, y: number, z: number) => THREE.ColorRepresentation) => {
+    const g = loft(rings, 9, 0.008);
+    g.rotateZ(-Math.PI / 2); // de l'axe x vers le bas
+    return mesh(g, color);
+  };
+  const legCoat = (inner: number, freq: number) => (x: number, y: number, z: number) => {
+    if (z * inner > 0.05) return vary(WHITE, 0.03);
+    if (Math.sin(y * freq + x * 4) > 0.82) return STRIPE;
+    return vary(ORANGE, 0.045);
+  };
   const makeLeg = (parent: THREE.Group, x: number, y: number, z: number, front: boolean, offset: number) => {
+    const side = Math.sign(z);
     const hip = new THREE.Group();
     hip.position.set(x, y, z);
-    const upper = new THREE.Mesh(facet(new THREE.CylinderGeometry(front ? 0.14 : 0.17, 0.1, 0.46, 6, 2).translate(0, -0.23, 0), fur(18, offset * 3, -10)), facetMat);
-    hip.add(upper);
+    hip.add(
+      limb(
+        front
+          ? [[-0.06, 0, 0.17, 0.13], [0.12, 0.01, 0.16, 0.12], [0.3, 0, 0.12, 0.1], [0.47, 0, 0.1, 0.085]]
+          : [[-0.08, 0.02, 0.22, 0.15], [0.12, 0.03, 0.2, 0.14], [0.3, 0.01, 0.13, 0.1], [0.47, 0, 0.095, 0.08]],
+        legCoat(-side, 22),
+      ),
+    );
     const knee = new THREE.Group();
     knee.position.y = -0.46;
     hip.add(knee);
-    const lower = new THREE.Mesh(facet(new THREE.CylinderGeometry(0.095, 0.085, 0.42, 6, 2).translate(0, -0.21, 0), fur(20, offset * 5, -10)), facetMat);
-    knee.add(lower);
+    knee.add(limb([[0, 0, 0.1, 0.085], [0.2, 0, 0.085, 0.075], [0.43, 0, 0.08, 0.072]], front ? legCoat(-side, 26) : (_x, _y, zz) => vary(zz * -side > 0 || !front ? WHITE : ORANGE, 0.03)));
     const ankle = new THREE.Group();
     ankle.position.y = -0.42;
     knee.add(ankle);
-    const foot = part(1, 0.14, 0.06, 0.1, (_x, y) => vary(y < 0 ? CREAM : ORANGE, 0.04));
-    foot.position.set(-0.05, -0.02, 0);
-    ankle.add(foot);
+    const paw = mesh(loft([[0.08, 0.02, 0.06, 0.1], [-0.04, 0.0, 0.07, 0.11], [-0.15, -0.02, 0.045, 0.1]], 8), (_x, y) => vary(y < -0.01 ? WHITE : ORANGE, 0.04));
+    paw.position.y = -0.03;
+    ankle.add(paw);
+    for (let k = -1; k <= 1; k++) {
+      const toe = blob(0.04, 0, 1.2, 0.8, 1, () => vary(WHITE, 0.03));
+      toe.position.set(-0.17, -0.045, k * 0.055);
+      const claw = new THREE.Mesh(new THREE.ConeGeometry(0.012, 0.035, 3).rotateZ(Math.PI / 2), solid('#2a1b16'));
+      claw.position.set(-0.215, -0.06, k * 0.055);
+      ankle.add(toe, claw);
+    }
     parent.add(hip);
     legs.push({ hip, knee, ankle, front, offset });
   };
-  // séquence latérale : arrière gauche, avant gauche, arrière droit, avant droit
-  makeLeg(chest, -0.12, -0.2, 0.2, true, 0.25);
-  makeLeg(chest, -0.12, -0.2, -0.2, true, 0.75);
-  makeLeg(hips, 0.12, -0.16, 0.19, false, 0);
-  makeLeg(hips, 0.12, -0.16, -0.19, false, 0.5);
+  makeLeg(chest, -0.18, -0.24, 0.2, true, 0.25);
+  makeLeg(chest, -0.18, -0.24, -0.2, true, 0.75);
+  makeLeg(hips, 0.16, -0.2, 0.19, false, 0);
+  makeLeg(hips, 0.16, -0.2, -0.19, false, 0.5);
 
-  // queue : 9 segments articulés
+  // queue : 10 anneaux, blanche et noire au bout
   const tail: THREE.Group[] = [];
   let parent: THREE.Object3D = hips;
-  for (let i = 0; i < 9; i++) {
+  const ring = (i: number) => (i >= 9 ? STRIPE : i >= 6 ? (i % 2 ? WHITE : STRIPE) : i % 2 ? STRIPE : ORANGE);
+  for (let i = 0; i < 10; i++) {
     const g = new THREE.Group();
-    g.position.set(i === 0 ? 0.5 : 0.15, i === 0 ? 0.12 : 0, 0);
-    const r = 0.07 - i * 0.004;
-    const m = new THREE.Mesh(
-      new THREE.CylinderGeometry(r * 0.9, r, 0.16, 6).rotateZ(Math.PI / 2).translate(0.075, 0, 0),
-      solid((i % 2 && i > 1) || i === 8 ? STRIPE : ORANGE),
-    );
-    g.add(m);
+    g.position.set(i === 0 ? 0.58 : 0.14, i === 0 ? 0.1 : 0, 0);
+    const r = 0.075 - i * 0.0035;
+    g.add(new THREE.Mesh(new THREE.CylinderGeometry(r * 0.92, r, 0.15, 7).rotateZ(Math.PI / 2).translate(0.07, 0, 0), solid(ring(i))));
     parent.add(g);
     parent = g;
     tail.push(g);
@@ -827,6 +1024,8 @@ function buildTiger() {
     chest.scale.y = 1 + breathe;
     hips.rotation.x = walk * Math.sin(phase) * 0.05;
     chest.rotation.x = -walk * Math.sin(phase) * 0.05;
+    // épaules qui roulent en marchant
+    chest.position.y = 1.08 + walk * Math.sin(phase * 2) * 0.015;
 
     for (const L of legs) {
       const ph = phase + L.offset * Math.PI * 2;
@@ -843,7 +1042,6 @@ function buildTiger() {
       }
     }
 
-    // tête : posée sur les pattes en dormant, levée et curieuse éveillée
     const perk = p.perk;
     const sleepNeck = 0.55 + Math.sin(t * 1.4) * 0.03;
     const awakeNeck = -0.15 - perk * 0.25 + p.lookUp * 0.4 + walk * 0.12;
@@ -854,13 +1052,12 @@ function buildTiger() {
     head.rotation.x = lerp(0, 0.18, lie);
     jaw.rotation.z = p.happy && walk < 0.5 ? Math.max(0, Math.sin(t * 1.3)) * 0.18 : 0;
     const blink = p.awake && Math.sin(t * 0.83) > 0.985 ? 0.12 : 1;
-    eyes.forEach((e) => (e.scale.y = lerp(p.awake ? blink : 0.15, 0.15, lie)));
+    eyes.forEach((e) => (e.scale.y = lerp(p.awake ? blink : 0.1, 0.1, lie)));
     ears.forEach((e, i) => {
       const twitch = Math.sin(t * 0.55 + i * 2) > 0.97 ? 0.4 : 0;
       e.rotation.z = twitch - perk * 0.3;
     });
 
-    // queue : ondulation qui se propage, haute et joyeuse quand il est libre
     const energy = lerp(p.awake ? 1 : 0.35, 0.25, lie);
     tail.forEach((s, i) => {
       const k = i / tail.length;
