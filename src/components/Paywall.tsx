@@ -14,16 +14,16 @@ const DOWNSELL_SEEN = 'tt:downsell-seen';
 
 const COPY: Record<PaywallReason, { title: string; lead: string }> = {
   history: {
-    title: 'Ton année mérite d’être gardée.',
-    lead: 'Chaque jour que tu as tenu raconte quelque chose. En gratuit, seuls tes 30 derniers jours restent nets. Le reste s’efface dans le flou.',
+    title: 'Ton année mérite d’être gardée. Même les EPIC FAIL.',
+    lead: 'Chaque jour tenu raconte quelque chose. En gratuit, seuls tes 30 derniers jours restent nets. Le reste part dans le flou, comme tes bonnes résolutions de janvier.',
   },
   bilan: {
     title: 'Vois enfin où passe ton temps.',
-    lead: 'Ce que tu fais vraiment, ce que tu repousses, ce que tu fuis depuis des semaines. Le bilan ne ment pas, et c’est pour ça qu’il aide.',
+    lead: 'Ton indice de flemme, tes EPIC FAIL, les tâches que tu fuis depuis des semaines. Le bilan ne ment pas. C’est pour ça qu’il aide (et qu’il pique un peu).',
   },
   upgrade: {
     title: 'Deviens la personne qui tient sa journée.',
-    lead: 'La méthode marche quand on la tient dans la durée. Pro te donne de quoi voir ton chemin, jour après jour, année après année.',
+    lead: 'La méthode marche quand on la tient dans la durée. Pro te montre tout ton chemin, jour après jour, flemmes comprises.',
   },
 };
 
@@ -86,7 +86,7 @@ function Paywall({ reason, onClose }: { reason: PaywallReason; onClose: () => vo
       <p className="pw-lead">{copy.lead}</p>
       <ul className="pw-gains">
         <li>Relis chaque jour de ton année, et de toutes les suivantes</li>
-        <li>Ton bilan : ce que tu fais vraiment, ce que tu repousses</li>
+        <li>Ton bilan : ton indice de flemme, tes EPIC FAIL, tes vrais progrès</li>
         <li>Les widgets d’écran d’accueil, dès leur sortie</li>
       </ul>
       <div className="pw-plans" role="radiogroup" aria-label="Offre">
@@ -118,16 +118,16 @@ function Downsell({ onClose }: { onClose: () => void }) {
   const { session } = useAuth();
   return (
     <Modal onClose={onClose} label="Offre de bienvenue">
-      <p className="pw-eyebrow">Une dernière chose</p>
+      <p className="pw-eyebrow">Attends, attends</p>
       <h2 className="pw-title">Ta première année à 19,90 €.</h2>
       <p className="pw-lead">
-        Au lieu de 29,90 €, pour que le prix ne soit pas ce qui t’empêche de tenir ta feuille. Moins de 1,70 € par mois. Cette offre n’apparaîtra
+        Au lieu de 29,90 €. Parce que le prix ne devrait pas servir d’excuse à ta flemme. Moins de 1,70 € par mois. Cette offre n’apparaîtra
         qu’une fois.
       </p>
-      <Checkout choice={{ plan: 'yearly', offer: 'downsell' }} label="Garder mon année à 19,90 €" loggedIn={!!session} />
+      <Checkout choice={{ plan: 'yearly', offer: 'downsell' }} label="OK, je garde mon année à 19,90 €" loggedIn={!!session} />
       <p className="pw-fine">Puis 29,90 € par an, résiliable à tout moment.</p>
       <button className="pw-later" onClick={onClose}>
-        Non merci
+        Non merci, j’assume
       </button>
     </Modal>
   );

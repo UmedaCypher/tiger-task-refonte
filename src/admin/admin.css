@@ -97,7 +97,7 @@
   flex: 1;
   min-height: 2px;
   border-radius: 3px 3px 0 0;
-  background: var(--green);
+  background: var(--accent);
   opacity: 0.85;
 }
 .bars-axis {
@@ -131,7 +131,7 @@
 .funnel-bar i {
   display: block;
   height: 100%;
-  background: var(--green);
+  background: var(--accent);
 }
 @media (max-width: 639px) {
   .funnel-row {
@@ -235,7 +235,7 @@
   background: #3b82f6;
 }
 .kr-bar i.is-done {
-  background: var(--green);
+  background: var(--accent);
 }
 .okr-new {
   display: flex;

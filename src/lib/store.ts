@@ -341,7 +341,7 @@ function seed(): State {
     carried,
     mk(y, 'Ranger le bureau', 'red', {}, 2),
     mk(today, 'Répondre au mail qui fait peur', 'white', { carriedFrom: carried.id, carryCount: 1 }, -2),
-    mk(today, 'Toucher un sceau pour marquer une tâche faite', 'white', {}, 0),
+    mk(today, 'Toucher le carré pour marquer une tâche faite', 'white', {}, 0),
     mk(today, 'Toucher l’intitulé pour choisir une autre couleur', 'white', {}, 1),
     mk(today, 'Le soir, donner une couleur à chaque tâche', 'white', {}, 2),
   ];

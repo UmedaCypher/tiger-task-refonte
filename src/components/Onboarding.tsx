@@ -8,12 +8,12 @@ const DONE_KEY = 'tt:onboarded';
 
 const MEANING: Record<Pigment, string> = {
   white: 'Pas encore jugée.',
-  green: 'La chose est faite. Elle ne reviendra pas.',
-  blue: 'Elle traînait depuis des jours. Tu l’as vaincue.',
-  yellow: 'Reportée par flemme. Elle revient demain, avec son compteur.',
-  purple: 'Reportée pour une raison qui ne dépend pas de toi.',
-  red: 'Tu as choisi de ne pas la faire. Et tu le sais.',
-  black: 'Une vraie défaite. Ça arrive. Demain est une page neuve.',
+  green: 'C’est fait. Bravo, champion.',
+  blue: 'Elle traînait depuis des jours. Miracle.',
+  yellow: 'Pas envie aujourd’hui. Demain, promis. Feignasse assumée.',
+  purple: 'Reportée, et pour une fois ce n’est pas ta faute.',
+  red: 'Plus besoin, ou plus envie. On lâche, sans regret.',
+  black: 'Un échec cuisant, légendaire. On en rira plus tard.',
 };
 export const needsOnboarding = () => !localStorage.getItem(DONE_KEY);
 
@@ -40,7 +40,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
     {
       eyebrow: 'Tu connais ça',
       title: 'Ta liste ne finit jamais.',
-      body: 'Tu ajoutes, tu reportes, tu culpabilises. Et le soir, impossible de dire ce que tu as vraiment fait de ta journée.',
+      body: 'Tu ajoutes, tu reportes, tu culpabilises. Et le soir, impossible de dire ce que tu as fait de ta journée. (Spoiler : plein de choses. Juste pas celles de la liste.)',
       visual: (
         <div className="ob-pile" aria-hidden="true">
           {['Répondre à ce mail', 'Appeler la banque', 'Finir le dossier', 'Ranger', 'Sport', 'Relire le contrat'].map((t, i) => (
@@ -71,7 +71,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
     {
       eyebrow: 'Le verdict du soir',
       title: 'Chaque tâche reçoit sa couleur.',
-      body: 'Faite, reportée, esquivée, empêchée… Sept couleurs, aucune excuse. Touche-les pour voir ce qu’elles veulent dire.',
+      body: 'Faite, flemme, abandonnée… ou EPIC FAIL. Sept couleurs, zéro excuse. Touche-les pour voir ce qu’elles veulent dire.',
       visual: (
         <div className="ob-colors">
           <div className="chips">
@@ -92,9 +92,9 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
       ),
     },
     {
-      eyebrow: 'Ce que tu repousses',
+      eyebrow: 'Ta flemme te suit',
       title: 'Ce que tu reportes revient demain.',
-      body: 'En jaune ou en violet, la tâche se recopie toute seule le lendemain, avec son compteur. Ce que tu fuis finit par se voir. Et le jour où tu la finis enfin, elle devient bleue.',
+      body: 'En jaune, la tâche se recopie toute seule le lendemain, avec son compteur. Au troisième report, l’app commence à te chambrer. Le jour où tu la finis enfin, elle devient bleue. Miracle.',
       visual: (
         <div className="ob-carry" aria-hidden="true">
           <span className="chip is-yellow" style={{ ['--fill' as string]: PIGMENTS.yellow.fill, ['--ink' as string]: PIGMENTS.yellow.ink }}>
@@ -102,11 +102,11 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
           </span>
           <span className="ob-arrow">→</span>
           <span className="chip is-yellow" style={{ ['--fill' as string]: PIGMENTS.yellow.fill, ['--ink' as string]: PIGMENTS.yellow.ink }}>
-            Mail qui fait peur ↻2
+            Flemme ↻3
           </span>
           <span className="ob-arrow">→</span>
           <span className="chip is-blue" style={{ ['--fill' as string]: PIGMENTS.blue.fill, ['--ink' as string]: PIGMENTS.blue.ink }}>
-            Enfin fait
+            Enfin !
           </span>
         </div>
       ),
@@ -114,7 +114,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
     {
       eyebrow: 'Dans un mois',
       title: 'Tu verras qui tu es vraiment.',
-      body: 'Pas celui que tu promets d’être. Tes jours colorés dessinent ton année : tes bonnes semaines, tes creux, tes progrès. Sans jugement, mais sans mensonge.',
+      body: 'Pas celui que tu promets d’être. Tes jours colorés dessinent ton année : tes semaines de champion, ta flemme, tes EPIC FAIL. Sans jugement. Enfin, presque.',
       visual: (
         <div className="ob-year" aria-hidden="true">
           {Array.from({ length: 84 }, (_, i) => {

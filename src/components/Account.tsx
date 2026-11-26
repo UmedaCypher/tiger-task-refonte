@@ -16,7 +16,7 @@ const SYNC_LABEL: Record<string, string> = {
 
 const PLAN_LABEL = { monthly: 'Pro mensuel', yearly: 'Pro annuel', lifetime: 'Pro à vie' } as const;
 
-export function Account({ onReplayOnboarding }: { onReplayOnboarding: () => void }) {
+export function Account({ onReplayOnboarding, roast, onRoast }: { onReplayOnboarding: () => void; roast: boolean; onRoast: (v: boolean) => void }) {
   const { session, profile, ready } = useAuth();
   const sync = useSyncStatus();
   const [email, setEmail] = useState('');
@@ -146,6 +146,13 @@ export function Account({ onReplayOnboarding }: { onReplayOnboarding: () => void
       {/* 4. Le reste */}
       <section className="group">
         <h3>Plus</h3>
+        <label className="switch-row">
+          <span>
+            <strong>Mode roast</strong>
+            <span className="muted">L’app te chambre, gentiment, quand tu colores tes tâches.</span>
+          </span>
+          <input type="checkbox" role="switch" checked={roast} onChange={(e) => onRoast(e.target.checked)} />
+        </label>
         {install && (
           <button className="btn" onClick={install}>
             Installer l’app sur cet appareil

@@ -26,8 +26,9 @@ export interface Bilan {
   judged: number;
   /** (faites + enfin faites) / tâches jugées */
   accomplishment: number;
-  /** (safran + vermillon) / tâches jugées — l'indice de flemme */
+  /** jaune / tâches jugées — l'indice de flemme (abandonner n'est pas de la flemme) */
   flemme: number;
+  epicFails: number;
   /** jours consécutifs (jusqu'à hier ou aujourd'hui) avec au moins une tâche faite */
   streak: number;
   bestStreak: number;
@@ -85,7 +86,8 @@ export function bilan(s: State, year: number): Bilan {
     total,
     judged,
     accomplishment: judged ? done / judged : 0,
-    flemme: judged ? (counts.yellow + counts.red) / judged : 0,
+    flemme: judged ? counts.yellow / judged : 0,
+    epicFails: counts.black,
     streak,
     bestStreak: Math.max(bestStreak, streak),
     activeDays,

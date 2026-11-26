@@ -2,7 +2,8 @@ import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'rea
 import { dayOfYear, fromKey, monthName, todayKey, toKey, weekday, type DayKey } from '../lib/date';
 import { PIGMENTS } from '../lib/pigments';
 import { byDay } from '../lib/stats';
-import { addTask, materializeRituals, quickComplete, useStore, type Task } from '../lib/store';
+import { dayLine, roastFor, say } from '../lib/roast';
+import { addTask, getState, materializeRituals, quickComplete, tasksOf, useStore, type Task } from '../lib/store';
 import { trackDaily } from '../lib/growth';
 import { CellMenu } from './CellMenu';
 
@@ -129,6 +130,14 @@ export function Sheet({
 
 const EMPTY: Task[] = [];
 
+/** Marque faite (ou remet à faire), puis laisse l'app réagir */
+function completeWithRoast(task: Task) {
+  quickComplete(task.id);
+  trackDaily('day_colored');
+  const s = getState();
+  say(roastFor(task, s.tasks[task.id].pigment, tasksOf(s, task.date)));
+}
+
 const Row = memo(function Row({
   day,
   tasks,
@@ -195,6 +204,7 @@ const Row = memo(function Row({
               </span>
             )}
           </div>
+          <p className="lens-line">{dayLine(tasks, day, todayKey())}</p>
           <div className="chips">
             {tasks.map((t) => (
               <Chip key={t.id} task={t} onMenu={onMenu} />
@@ -288,8 +298,7 @@ function Cell({ task, onMenu, compact }: { task: Task; onMenu: (id: string, rect
           aria-label={task.pigment === 'white' ? `Marquer « ${task.text} » comme faite` : `Remettre « ${task.text} » à faire`}
           onClick={(e) => {
             e.stopPropagation();
-            quickComplete(task.id);
-            trackDaily('day_colored');
+            completeWithRoast(task);
           }}
         >
           <MarkIcon pigment={task.pigment} />
@@ -367,10 +376,7 @@ function Chip({ task, onMenu }: { task: Task; onMenu: (id: string, rect: DOMRect
       <button
         className="chip-mark"
         aria-label={task.pigment === 'white' ? `Marquer « ${task.text} » comme faite` : `Remettre « ${task.text} » à faire`}
-        onClick={() => {
-          quickComplete(task.id);
-          trackDaily('day_colored');
-        }}
+        onClick={() => completeWithRoast(task)}
       >
         <MarkIcon pigment={task.pigment} />
       </button>

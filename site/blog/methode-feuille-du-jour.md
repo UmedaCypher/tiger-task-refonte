@@ -18,14 +18,14 @@ Cette contrainte change tout. Une ligne, c’est petit. Tu ne peux pas y mettre 
 
 Avant de fermer ta journée, tu donnes une couleur à chaque tâche :
 
-- **Faite** : elle ne reviendra pas.
-- **Enfin faite** : elle traînait depuis des jours, et tu l’as vaincue.
-- **Reportée** : par flemme. Elle revient demain.
-- **Imprévu** : reportée pour une raison qui ne dépend pas de toi.
-- **Pas faite** : tu as choisi de ne pas la faire.
-- **Échec** : une vraie défaite. Ça arrive.
+- **Faite** : c’est fait. Bravo.
+- **Enfin !** : elle traînait depuis des jours. Miracle.
+- **Flemme** : pas envie aujourd’hui. Elle revient demain. Feignasse assumée.
+- **Imprévu** : reportée, et pour une fois ce n’est pas ta faute.
+- **Abandonnée** : plus besoin, ou plus envie. On lâche, sans regret.
+- **EPIC FAIL** : un échec cuisant, légendaire. On en rira plus tard.
 
-Ce moment prend deux minutes. C’est pourtant le cœur de la méthode : un instant d’honnêteté, chaque soir.
+Ce moment prend deux minutes. C’est pourtant le cœur de la méthode : un instant d’honnêteté, chaque soir. Et d’autodérision, si possible.
 
 ## Ce que tu reportes te suit
 

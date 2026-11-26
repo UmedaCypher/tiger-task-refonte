@@ -8,6 +8,7 @@ import { COL_LETTERS, Sheet, useColumns } from './components/Sheet';
 import { addDays, todayKey, type DayKey } from './lib/date';
 import { captureReferral, claimReferral, startCheckout, takePendingPlan, trackDaily } from './lib/growth';
 import { isPro, onAuth, refreshProfile, useAuth } from './lib/supabase';
+import { onSay } from './lib/roast';
 import { startSync } from './lib/sync';
 
 /** En gratuit : les 30 derniers jours restent nets, les plus anciens sont floutés */
@@ -23,13 +24,14 @@ type Theme = 'auto' | 'day' | 'night';
 interface Prefs {
   theme: Theme;
   excel: boolean;
+  roast: boolean;
 }
 const PREFS_KEY = 'tiger-task:prefs';
 function loadPrefs(): Prefs {
   try {
-    return { theme: 'auto', excel: false, ...JSON.parse(localStorage.getItem(PREFS_KEY) ?? '{}') };
+    return { theme: 'auto', excel: false, roast: true, ...JSON.parse(localStorage.getItem(PREFS_KEY) ?? '{}') };
   } catch {
-    return { theme: 'auto', excel: false };
+    return { theme: 'auto', excel: false, roast: true };
   }
 }
 
@@ -118,6 +120,8 @@ export function App() {
     }
     if (q.has('pacte')) window.history.replaceState({}, '', '/app/');
   }, []);
+
+  useEffect(() => onSay(setToast), []);
 
   useEffect(() => {
     if (!toast) return;
@@ -224,6 +228,8 @@ export function App() {
               {panel === 'rituels' && <Rituals />}
               {panel === 'compte' && (
                 <Account
+                  roast={prefs.roast}
+                  onRoast={(roast) => setPref({ roast })}
                   onReplayOnboarding={() => {
                     setPanel(null);
                     setOnboarding(true);
@@ -235,7 +241,11 @@ export function App() {
         </div>
       )}
 
-      {toast && <div className="toast glass">{toast}</div>}
+      {toast && (
+        <div className="toast glass" role="status" key={toast} onClick={() => setToast(null)}>
+          {toast}
+        </div>
+      )}
       <PaywallHost />
       {onboarding && <Onboarding onDone={() => (setOnboarding(false), setToToday((n) => n + 1))} />}
     </div>
@@ -245,7 +255,7 @@ export function App() {
 function Logo() {
   return (
     <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true">
-      <rect x="1" y="1" width="18" height="18" rx="5" fill="var(--green)" />
+      <rect x="1" y="1" width="18" height="18" rx="5" fill="var(--accent)" />
       <path d="M1 7.5h18M1 12.5h18M7.5 1v18" stroke="#fff" strokeOpacity=".55" strokeWidth="1" />
       <rect x="7.5" y="7.5" width="11.5" height="5" fill="#fff" fillOpacity=".9" />
     </svg>

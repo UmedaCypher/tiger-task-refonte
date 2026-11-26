@@ -13,7 +13,7 @@ const NAV = [
   ['/faq/', 'FAQ'],
 ];
 
-const logo = `<svg viewBox="0 0 20 20" width="22" height="22" aria-hidden="true"><rect x="1" y="1" width="18" height="18" rx="5" fill="#138a52"/><path d="M1 7.5h18M1 12.5h18M7.5 1v18" stroke="#fff" stroke-opacity=".55"/><rect x="7.5" y="7.5" width="11.5" height="5" fill="#fff" fill-opacity=".9"/></svg>`;
+const logo = `<svg viewBox="0 0 20 20" width="22" height="22" aria-hidden="true"><rect x="1" y="1" width="18" height="18" rx="5" fill="#ff7a45"/><path d="M1 7.5h18M1 12.5h18M7.5 1v18" stroke="#fff" stroke-opacity=".55"/><rect x="7.5" y="7.5" width="11.5" height="5" fill="#fff" fill-opacity=".9"/></svg>`;
 
 export function page({ path, title, description, body, depth, dark = false }) {
   const up = '../'.repeat(depth + 1);

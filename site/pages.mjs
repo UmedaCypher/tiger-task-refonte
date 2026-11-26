@@ -2,12 +2,12 @@
 import { appMock } from './layout.mjs';
 
 const colors = [
-  ['g', 'Faite', 'La chose est faite. Elle ne reviendra pas.'],
-  ['b', 'Enfin faite', 'Elle traînait depuis des jours. Tu l’as vaincue.'],
-  ['y', 'Reportée', 'Par flemme. Elle revient demain, avec son compteur.'],
-  ['p', 'Imprévu', 'Reportée pour une raison qui ne dépend pas de toi.'],
-  ['r', 'Pas faite', 'Tu as choisi de ne pas la faire. Et tu le sais.'],
-  ['k', 'Échec', 'Une vraie défaite. Ça arrive. Demain est une page neuve.'],
+  ['g', 'Faite', 'C’est fait. Bravo, champion.'],
+  ['b', 'Enfin !', 'Elle traînait depuis des jours. Miracle.'],
+  ['y', 'Flemme', 'Pas envie aujourd’hui. Demain, promis. Feignasse assumée : elle revient toute seule.'],
+  ['p', 'Imprévu', 'Reportée, et pour une fois ce n’est pas ta faute.'],
+  ['r', 'Abandonnée', 'Plus besoin, ou plus envie. On lâche, sans regret.'],
+  ['k', 'EPIC FAIL', 'Un échec cuisant, légendaire. On en rira plus tard.'],
 ];
 
 const pricingCards = (founderNote = true) => `
@@ -60,9 +60,9 @@ export const home = {
 <section class="hero">
   <div class="hero-halo" aria-hidden="true"></div>
   <div class="hero-copy reveal">
-    <p class="eyebrow">La méthode de la feuille du jour</p>
+    <p class="eyebrow">La to-do list qui te roaste (gentiment)</p>
     <h1>Arrête de courir après ta liste. Commence à tenir tes journées.</h1>
-    <p class="lead">Une ligne par jour. Une couleur par tâche. Le soir, tu sais exactement ce que tu as fait, ce que tu as repoussé, et pourquoi. Au bout d’un mois, tu ne t’organises plus&nbsp;: tu avances.</p>
+    <p class="lead">Une ligne par jour, une couleur par tâche&nbsp;: faite, flemme, abandonnée… ou EPIC FAIL. Le soir, tu assumes, l’app te chambre un peu, et bizarrement, c’est là que tu commences à avancer.</p>
     <div class="cta-row">
       <a class="btn btn-primary btn-lg" href="/app/">Commencer gratuitement</a>
       <a class="btn btn-ghost btn-lg" href="#comment">Voir comment ça marche</a>
@@ -77,12 +77,12 @@ export const home = {
     <p class="eyebrow">Tu connais ça</p>
     <h2>Occupé toute la journée. Et pourtant, rien n’avance.</h2>
     <ul class="pain-list">
-      <li class="reveal">Ta to-do list s’allonge plus vite qu’elle ne se vide.</li>
-      <li class="reveal">Tu reportes la même tâche depuis trois semaines. Tu le sais. Elle te pèse.</li>
-      <li class="reveal">Le soir, impossible de dire ce que tu as vraiment fait de ta journée.</li>
-      <li class="reveal">Tu as essayé dix applis. Trop de projets, d’étiquettes, de réglages. Tu les as toutes abandonnées.</li>
+      <li class="reveal">Ta to-do list s’allonge plus vite que ta motivation.</li>
+      <li class="reveal">Cette tâche, tu la reportes depuis trois semaines. Elle a sa brosse à dents chez toi.</li>
+      <li class="reveal">Le soir, tu as été occupé toute la journée. À quoi&nbsp;? Mystère.</li>
+      <li class="reveal">Tu as testé dix applis d’organisation. Surtout, tu as organisé des applis.</li>
     </ul>
-    <p class="pain-turn reveal">Le problème n’est pas ta motivation. C’est que rien ne te montre la vérité sur tes journées.</p>
+    <p class="pain-turn reveal">Le problème n’est pas ta motivation. C’est que personne ne te dit la vérité sur tes journées. Nous, si. Avec tendresse.</p>
   </div>
 </section>
 
@@ -92,8 +92,8 @@ export const home = {
     <h2>Pas une appli de plus. Une habitude qui te transforme.</h2>
     <ol class="timeline">
       <li class="reveal"><span>Jour 1</span><h3>Tu poses ta journée en deux minutes.</h3><p>Pas de projets, pas de priorités à calculer. Juste ce qui compte aujourd’hui, sur une ligne.</p></li>
-      <li class="reveal"><span>Semaine 1</span><h3>Tu vois enfin ce que tu repousses.</h3><p>Le soir, chaque tâche reçoit sa couleur. Les reports se voient. Assez pour que ça te dérange, et que tu agisses.</p></li>
-      <li class="reveal"><span>Mois 1</span><h3>Les tâches qui traînaient disparaissent.</h3><p>Ce que tu fuyais devient bleu, une par une. Tu tiens ta feuille sans même y penser.</p></li>
+      <li class="reveal"><span>Semaine 1</span><h3>Ta flemme a enfin un nom. Et une couleur.</h3><p>Le soir, chaque tâche reçoit son verdict. Jaune pour la flemme assumée, noir pour l’EPIC FAIL. Tu ris un peu, et tu fais mieux le lendemain.</p></li>
+      <li class="reveal"><span>Mois 1</span><h3>Les tâches qui squattaient partent enfin.</h3><p>Ce que tu repoussais depuis des semaines devient bleu, une par une. Tu tiens ta feuille sans même y penser.</p></li>
       <li class="reveal"><span>Année 1</span><h3>Tu as la preuve que tu as changé.</h3><p>Ton année tient sur un écran&nbsp;: tes meilleures semaines, tes creux, ta discipline qui s’est installée.</p></li>
     </ol>
   </div>
@@ -106,10 +106,28 @@ export const home = {
     <div class="steps">
       <article class="reveal"><b>Le matin</b><h3>Tu poses.</h3><p>Tu écris dans la ligne du jour ce que tu vas faire. Ce que tu as reporté hier est déjà là.</p></article>
       <article class="reveal"><b>La journée</b><h3>Tu fais.</h3><p>Un geste pour marquer une tâche faite. La feuille reste devant toi, nette, sans distraction.</p></article>
-      <article class="reveal"><b>Le soir</b><h3>Tu juges.</h3><p>Chaque tâche reçoit sa couleur. Honnêtement. C’est ce moment qui change tout.</p></article>
+      <article class="reveal"><b>Le soir</b><h3>Tu assumes.</h3><p>Chaque tâche reçoit sa couleur. Honnêtement. L’app te chambre un peu. C’est ce moment qui change tout.</p></article>
     </div>
     <div class="palette reveal" role="list" aria-label="Les couleurs du verdict">
       ${colors.map(([c, n, d]) => `<div role="listitem" class="swatch"><i class="d-${c}"></i><b>${n}</b><span>${d}</span></div>`).join('')}
+    </div>
+  </div>
+</section>
+
+<section class="roast">
+  <div class="wrap split">
+    <div class="reveal">
+      <p class="eyebrow">Le mode roast</p>
+      <h2>Une app qui te chambre. Gentiment.</h2>
+      <p class="lead">Tiger Task réagit à tes couleurs. Trop de flemme&nbsp;? Elle te le fait remarquer. Une journée parfaite&nbsp;? Elle s’inquiète pour toi. Rien de méchant&nbsp;: juste assez pour que tu souries, et que tu reviennes demain.</p>
+      <p class="fine">Tu préfères le silence&nbsp;? Ça se coupe en un geste.</p>
+    </div>
+    <div class="bubbles reveal" aria-label="Exemples de réactions de l’app">
+      <p class="bubble"><i class="d-y"></i>Trois reports. Elle a emménagé chez toi.</p>
+      <p class="bubble"><i class="d-k"></i>EPIC FAIL débloqué. Il fallait oser.</p>
+      <p class="bubble"><i class="d-b"></i>Enfin&nbsp;! Elle commençait à payer un loyer.</p>
+      <p class="bubble"><i class="d-g"></i>Tout est vert. Qui es-tu, et qu’as-tu fait de toi&nbsp;?</p>
+      <p class="bubble"><i class="d-r"></i>Abandonnée. Parfois, lâcher, c’est grandir.</p>
     </div>
   </div>
 </section>
@@ -120,7 +138,7 @@ export const home = {
     <div class="reveal">
       <p class="eyebrow">Le soir venu</p>
       <h2>Le verdict du soir, sans culpabilité.</h2>
-      <p class="lead">Quand la journée se termine, l’app passe en mode nuit. Une lumière douce, le temps de regarder ta journée en face. Pas pour te juger&nbsp;: pour comprendre, et faire mieux demain.</p>
+      <p class="lead">Quand la journée se termine, l’app passe en mode nuit. Une lumière douce, le temps de regarder ta journée en face. Pas pour te juger&nbsp;: la flemme, ça se soigne mieux en riant.</p>
       <a class="btn btn-light" href="/methode/">Découvrir la méthode</a>
     </div>
     <div class="reveal">${appMock({ night: true })}</div>
@@ -147,7 +165,7 @@ export const home = {
 <section class="final">
   <div class="wrap narrow reveal">
     <h2>Demain matin, une seule ligne.</h2>
-    <p class="lead">C’est tout ce qu’il faut pour commencer. Le reste viendra, jour après jour.</p>
+    <p class="lead">C’est tout ce qu’il faut pour commencer. Le reste viendra, jour après jour. Et l’app sera là pour te chambrer.</p>
     <a class="btn btn-primary btn-lg" href="/app/">Poser ma première journée</a>
   </div>
 </section>`,
@@ -167,12 +185,13 @@ export const methode = {
   <h2>1. Une ligne par jour</h2>
   <p>Chaque jour a sa ligne, et seulement sa ligne. Pas de projets, pas de colonnes, pas d’étiquettes. Le matin, tu y écris ce que tu vas faire aujourd’hui. Ce qui n’a pas sa place aujourd’hui n’y va pas.</p>
   <h2>2. Le soir, le verdict</h2>
-  <p>Avant de fermer ta journée, chaque tâche reçoit une couleur. C’est le cœur de la méthode&nbsp;: un moment honnête, court, où tu regardes ce que tu as vraiment fait.</p>
+  <p>Avant de fermer ta journée, chaque tâche reçoit une couleur. C’est le cœur de la méthode&nbsp;: un moment honnête, court, et un peu drôle, où tu regardes ce que tu as vraiment fait.</p>
   <div class="palette" role="list" aria-label="Les couleurs du verdict">
     ${colors.map(([c, n, d]) => `<div role="listitem" class="swatch"><i class="d-${c}"></i><b>${n}</b><span>${d}</span></div>`).join('')}
   </div>
-  <h2>3. Ce que tu reportes revient</h2>
-  <p>Une tâche reportée, en jaune ou en violet, se recopie toute seule le lendemain, avec un compteur. Elle ne disparaît pas dans une liste infinie&nbsp;: elle te suit. Le jour où tu la termines enfin, elle devient bleue. Rien n’est plus satisfaisant.</p>
+  <h2>3. Ta flemme te suit</h2>
+  <p>Une tâche en flemme (jaune) ou en imprévu (violet) se recopie toute seule le lendemain, avec un compteur. Elle ne disparaît pas dans une liste infinie&nbsp;: elle te suit, et l’app commence à te chambrer au troisième report. Le jour où tu la termines enfin, elle devient bleue. Rien n’est plus satisfaisant.</p>
+  <p>Abandonner n’est pas reporter&nbsp;: en rouge, la tâche part pour de bon, sans regret. Et le noir est réservé aux EPIC FAIL, ces échecs si spectaculaires qu’on finit par en rire.</p>
   <h2>4. L’année comme un tableau</h2>
   <p>Jour après jour, tes couleurs dessinent ton année. Tu vois tes semaines pleines, tes creux, tes habitudes qui s’installent. Ce n’est pas un score&nbsp;: c’est un miroir.</p>
   <h2>Pourquoi ça marche</h2>
@@ -216,7 +235,8 @@ const faqs = [
   ['Est-ce que ça marche sur iPhone et Android&nbsp;?', 'Oui. Ouvre l’app dans ton navigateur, puis « Ajouter à l’écran d’accueil » : elle s’installe comme une vraie app, et fonctionne même hors ligne. Des widgets d’écran d’accueil arrivent bientôt.'],
   ['Où sont stockées mes tâches&nbsp;?', 'Sur ton appareil, pour que l’app soit instantanée et marche hors ligne. Avec un compte (gratuit), elles sont aussi sauvegardées sur nos serveurs et synchronisées sur tes autres appareils. Personne d’autre ne les lit.'],
   ['Je n’ai jamais tenu une to-do list plus d’une semaine. Pourquoi celle-ci&nbsp;?', 'Parce qu’elle ne te demande presque rien : une ligne le matin, une couleur le soir. Et parce qu’elle te montre ce que tu repousses, ce qui donne une vraie raison d’y revenir.'],
-  ['C’est quoi les sept couleurs&nbsp;?', 'Faite, enfin faite, reportée par flemme, reportée par imprévu, pas faite, échec, et à faire. Le détail est sur la page <a href="/methode/">La méthode</a>.'],
+  ['C’est quoi les sept couleurs&nbsp;?', 'Faite, enfin !, flemme, imprévu, abandonnée, EPIC FAIL, et à faire. Le détail est sur la page <a href="/methode/">La méthode</a>.'],
+  ['L’app va vraiment me roaster&nbsp;?', 'Oui, gentiment. Quand tu colores une tâche en jaune pour la troisième fois, elle te le fait remarquer. Rien de méchant, et ça se coupe en un geste dans ton compte.'],
   ['Puis-je exporter mes données&nbsp;?', 'Oui, à tout moment et gratuitement, depuis ton compte. Tes données t’appartiennent.'],
   ['Comment résilier Pro&nbsp;?', 'Depuis ton compte, en deux clics. Tu gardes Pro jusqu’à la fin de la période payée.'],
   ['Comment fonctionne l’affiliation&nbsp;?', 'Tu partages ton lien : tes amis ont leur premier mois offert, et tu gagnes 7 € par abonnement annuel et 15 € par offre à vie. Tout est sur la page <a href="/affiliation/">Programme d’affiliation</a>.'],
