@@ -5,6 +5,7 @@ import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { HorizontalTiltShiftShader } from 'three/examples/jsm/shaders/HorizontalTiltShiftShader.js';
 import { VerticalTiltShiftShader } from 'three/examples/jsm/shaders/VerticalTiltShiftShader.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 /**
  * Le décor low poly : une vallée, un lac, des arbres en fleurs, des falaises,
@@ -393,6 +394,19 @@ export function createWorld(canvas: HTMLCanvasElement, opts: { reduced: boolean 
   const path = { z: 5.9, a: shore(5.9) - 0.2, b: shore(5.9) + 3.6 }; // la rive qu'il arpente
   const tg = { x: home.x, z: home.z, heading: Math.PI, lie: 1, walk: 0, phase: 0, perk: 0, dir: 1, pause: 0, look: 0, lookUp: 0 };
   tiger.position.set(home.x, height(home.x, home.z), home.z);
+  let focus: THREE.Object3D = T.head; // ce que la mise au point et la bulle suivent
+  let model: ReturnType<typeof rigModel> | null = null;
+  // un vrai modèle animé, s'il est fourni, remplace le tigre en formes simples
+  loadModel().then((gltf) => {
+    if (!gltf || disposed) return;
+    model = rigModel(gltf);
+    T.body.visible = false;
+    tiger.add(model.wrapper);
+    focus = model.head;
+    shadows(model.wrapper, true, false);
+    if (opts.reduced) frame();
+  });
+  let disposed = false;
 
   // ================================================================ rendu
   const composer = new EffectComposer(renderer);
@@ -509,7 +523,7 @@ export function createWorld(canvas: HTMLCanvasElement, opts: { reduced: boolean 
     camera.lookAt(camLook.x, camLook.y, camLook.z);
 
     // ---- netteté sur le tigre, flou de maquette autour
-    T.head.getWorldPosition(headPos);
+    focus.getWorldPosition(headPos);
     headPos.project(camera);
     hBlur.uniforms.r.value = (headPos.y + 1) / 2;
     vBlur.uniforms.r.value = (headPos.y + 1) / 2;
@@ -517,7 +531,7 @@ export function createWorld(canvas: HTMLCanvasElement, opts: { reduced: boolean 
     composer.render();
 
     if (onBubble) {
-      T.head.getWorldPosition(headPos);
+      focus.getWorldPosition(headPos);
       headPos.y += 0.5;
       headPos.project(camera);
       onBubble(((headPos.x + 1) / 2) * w, ((1 - headPos.y) / 2) * h);
@@ -586,7 +600,8 @@ export function createWorld(canvas: HTMLCanvasElement, opts: { reduced: boolean 
     tg.look = damp(tg.look, awake && !moving ? -pointer.sx * 0.7 : 0, 3, dt);
     tg.lookUp = damp(tg.lookUp, awake && !moving ? -pointer.sy * 0.25 : 0, 3, dt);
 
-    T.pose({ lie: tg.lie, walk: tg.walk, phase: tg.phase, t, awake, perk: tg.perk, look: tg.look, lookUp: tg.lookUp, happy: mood === 'free' });
+    if (model) model.update(dt, { moving, sleeping: lieTarget === 1, happy: mood === 'free', look: tg.look, perk: tg.perk });
+    else T.pose({ lie: tg.lie, walk: tg.walk, phase: tg.phase, t, awake, perk: tg.perk, look: tg.look, lookUp: tg.lookUp, happy: mood === 'free' });
   }
 
   let running = false;
@@ -624,6 +639,7 @@ export function createWorld(canvas: HTMLCanvasElement, opts: { reduced: boolean 
       if (opts.reduced) frame();
     },
     dispose() {
+      disposed = true;
       stop();
       document.removeEventListener('visibilitychange', onVis);
       removeEventListener('resize', onResize);
@@ -854,7 +870,95 @@ function buildTiger() {
     });
   }
 
-  return { root, head, pose };
+  return { root, body, head, pose };
+}
+
+// ================================================================ modèle 3D fourni (facultatif)
+
+/**
+ * Dépose un fichier public/models/tiger.glb (modèle riggé et animé, par exemple sorti de Meshy ou Tripo)
+ * et il remplace automatiquement le tigre en formes simples.
+ * Les animations sont reconnues par leur nom : walk, idle, sleep / lie / rest, sit, jump / happy.
+ */
+const MODEL_URL = '/models/tiger.glb';
+const MODEL_LENGTH = 2.3; // longueur voulue, en unités du décor
+const MODEL_YAW = -Math.PI / 2; // la plupart des modèles regardent vers +z ; le décor attend -x
+
+async function loadModel() {
+  try {
+    const head = await fetch(MODEL_URL, { method: 'HEAD' });
+    if (!head.ok || !(head.headers.get('content-type') ?? '').match(/gltf|octet|model/)) return null;
+    return await new GLTFLoader().loadAsync(MODEL_URL);
+  } catch {
+    return null;
+  }
+}
+
+function rigModel(gltf: { scene: THREE.Group; animations: THREE.AnimationClip[] }) {
+  const wrapper = new THREE.Group();
+  const inner = gltf.scene;
+  // mise à l'échelle et pieds au sol
+  const box = new THREE.Box3().setFromObject(inner);
+  const size = box.getSize(new THREE.Vector3());
+  const s = MODEL_LENGTH / Math.max(size.x, size.z, 0.001);
+  inner.scale.multiplyScalar(s);
+  box.setFromObject(inner);
+  const c = box.getCenter(new THREE.Vector3());
+  inner.position.set(-c.x, -box.min.y, -c.z);
+  wrapper.add(inner);
+  wrapper.rotation.y = MODEL_YAW;
+  wrapper.scale.setScalar(1 / 0.85); // compense l'échelle du tigre en formes simples
+
+  const mixer = new THREE.AnimationMixer(inner);
+  const find = (...keys: string[]) => gltf.animations.find((a) => keys.some((k) => a.name.toLowerCase().includes(k)));
+  const clips = {
+    idle: find('idle', 'stand', 'breath') ?? gltf.animations[0],
+    walk: find('walk', 'trot', 'run'),
+    sleep: find('sleep', 'lie', 'lay', 'rest'),
+    sit: find('sit'),
+    happy: find('jump', 'happy', 'play', 'roar'),
+  };
+  const actions = new Map<THREE.AnimationClip, THREE.AnimationAction>();
+  const act = (clip?: THREE.AnimationClip) => {
+    if (!clip) return null;
+    if (!actions.has(clip)) actions.set(clip, mixer.clipAction(clip));
+    return actions.get(clip)!;
+  };
+  let current: THREE.AnimationAction | null = null;
+  const play = (clip?: THREE.AnimationClip, speed = 1) => {
+    const a = act(clip);
+    if (!a) return;
+    a.timeScale = speed;
+    if (a === current) return;
+    a.reset().play();
+    if (current) a.crossFadeFrom(current, 0.45, true);
+    current = a;
+  };
+
+  // la tête, pour la mise au point et le regard
+  let head: THREE.Object3D = wrapper;
+  inner.traverse((o) => {
+    if ((o as THREE.Bone).isBone && /head/i.test(o.name) && head === wrapper) head = o;
+  });
+  const headRest = head !== wrapper ? head.quaternion.clone() : null;
+  const yawQ = new THREE.Quaternion();
+  const up = new THREE.Vector3(0, 1, 0);
+
+  return {
+    wrapper,
+    head,
+    update(dt: number, s: { moving: boolean; sleeping: boolean; happy: boolean; look: number; perk: number }) {
+      if (s.moving) play(clips.walk ?? clips.idle);
+      else if (s.sleeping) play(clips.sleep ?? clips.sit ?? clips.idle, clips.sleep ? 1 : 0.4);
+      else if (s.happy && clips.happy && Math.sin(performance.now() / 2400) > 0.6) play(clips.happy);
+      else play(clips.sit && !s.happy ? clips.sit : clips.idle);
+      // on retire le regard ajouté à l'image précédente, puis l'animation joue, puis on le rajoute
+      if (headRest) head.quaternion.multiply(yawQ.invert());
+      mixer.update(dt);
+      yawQ.setFromAxisAngle(up, s.sleeping ? 0 : s.look * 0.8);
+      if (headRest) head.quaternion.multiply(yawQ);
+    },
+  };
 }
 
 export type World = ReturnType<typeof createWorld>;
