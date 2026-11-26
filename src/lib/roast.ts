@@ -128,3 +128,24 @@ export function bilanVerdict(flemmeRate: number, epicFails: number, judged: numb
   const wins = epicWins === 0 ? '' : epicWins === 1 ? ' Mais un EPIC WIN : ça, personne ne te l’enlèvera.' : ` Mais ${epicWins} EPIC WIN : chapeau.`;
   return base + fails + wins;
 }
+
+/** Le grand message du jour ouvert : plus vite c'est fini, plus vite on est libre */
+export function freedomLine(tasks: Task[], day: DayKey, today: DayKey): string {
+  const n = tasks.length;
+  const judged = tasks.filter((t) => t.pigment !== 'white').length;
+  const left = n - judged;
+  if (day > today) return n ? 'Pas encore là. Tu peux préparer le terrain.' : 'Une page vierge. Rien ne presse.';
+  if (day < today) {
+    if (!n) return 'Un jour sans rien. Repos bien mérité, on suppose.';
+    if (left) return 'Ce jour attend toujours son verdict.';
+    return tasks.some((t) => t.pigment === 'black') ? 'Un EPIC FAIL au compteur. On en rira plus tard.' : 'Journée close. Ce qui est fait est fait.';
+  }
+  if (!n) return 'Qu’est-ce qu’on accomplit aujourd’hui ?';
+  const r = judged / n;
+  if (r === 0) return 'Une journée neuve. Plus vite tu t’y mets, plus vite tu es libre.';
+  if (r < 0.4) return 'C’est parti. TikTok peut attendre un peu.';
+  if (r < 0.7) return 'À mi-chemin. Ton canapé commence à t’appeler.';
+  if (left === 1) return 'Plus qu’une. La liberté est juste là.';
+  if (left > 0) return `Encore ${left} et tu es libre.`;
+  return 'Libre ! Va scroller, tu l’as mérité.';
+}

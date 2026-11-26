@@ -349,7 +349,7 @@ function More({ tasks }: { tasks: Task[] }) {
   );
 }
 
-function AddCell({ day, autoFocus, className = 'cell is-add' }: { day: DayKey; autoFocus: boolean; className?: string }) {
+export function AddCell({ day, autoFocus, className = 'cell is-add' }: { day: DayKey; autoFocus: boolean; className?: string }) {
   const [v, setV] = useState('');
   return (
     <form
@@ -369,7 +369,7 @@ function AddCell({ day, autoFocus, className = 'cell is-add' }: { day: DayKey; a
   );
 }
 
-function Chip({ task, onMenu }: { task: Task; onMenu: (id: string, rect: DOMRect) => void }) {
+export function Chip({ task, onMenu }: { task: Task; onMenu: (id: string, rect: DOMRect) => void }) {
   const p = PIGMENTS[task.pigment];
   const ref = useRef<HTMLDivElement>(null);
   const prev = useRef(task.pigment);

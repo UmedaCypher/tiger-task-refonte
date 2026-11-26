@@ -5,7 +5,8 @@ import { Rituals } from './components/Rituals';
 import { needsOnboarding, Onboarding } from './components/Onboarding';
 import { openPaywall, PaywallHost } from './components/Paywall';
 import { COL_LETTERS, Sheet, useColumns } from './components/Sheet';
-import { addDays, todayKey, type DayKey } from './lib/date';
+import { Stage } from './components/Stage';
+import { addDays, fromKey, todayKey, type DayKey } from './lib/date';
 import { captureReferral, claimReferral, startCheckout, takePendingPlan, trackDaily } from './lib/growth';
 import { isPro, onAuth, refreshProfile, useAuth } from './lib/supabase';
 import { onSay } from './lib/roast';
@@ -179,6 +180,9 @@ export function App() {
             <Logo />
             <span>Tiger Task</span>
           </div>
+          {!prefs.excel ? (
+            <span className="month-label">{fromKey(openDay).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</span>
+          ) : (
           <div className="year" role="group" aria-label="Année">
             <button onClick={() => setYear(year - 1)} aria-label="Année précédente">
               <Chevron dir="left" />
@@ -188,6 +192,7 @@ export function App() {
               <Chevron dir="right" />
             </button>
           </div>
+          )}
           <div className="actions">
             <button
               className={`toggle ${prefs.excel ? 'is-on' : ''}`}
@@ -218,14 +223,20 @@ export function App() {
         )}
       </header>
 
-      <main>
-        <Sheet year={year} cols={cols} excel={prefs.excel} lockBefore={lockBefore} onLocked={() => openPaywall('history')} openDay={openDay} setOpenDay={setOpenDay} scrollToToday={toToday} />
-        <p className="credit">
-          D’après la méthode de Fibre Tigre : une ligne par jour, une couleur par tâche.
-        </p>
-      </main>
+      {prefs.excel ? (
+        <main>
+          <Sheet year={year} cols={cols} excel lockBefore={lockBefore} onLocked={() => openPaywall('history')} openDay={openDay} setOpenDay={setOpenDay} scrollToToday={toToday} />
+          <p className="credit">
+            D’après la méthode de Fibre Tigre : une ligne par jour, une couleur par tâche.
+          </p>
+        </main>
+      ) : (
+        <main className="stage-main">
+          <Stage openDay={openDay} setOpenDay={setOpenDay} lockBefore={lockBefore} onLocked={() => openPaywall('history')} />
+        </main>
+      )}
 
-      <button className={`today-fab glass ${todayAway ? 'is-away' : ''}`} onClick={goToday} aria-label="Revenir à aujourd’hui">
+      <button className={`today-fab glass ${(prefs.excel ? todayAway : openDay !== today) ? 'is-away' : ''}`} onClick={goToday} aria-label="Revenir à aujourd’hui">
         <span className="today-fab-wd">{WD_SHORT[new Date().getDay()]}</span>
         <span className="today-fab-num">{new Date().getDate()}</span>
       </button>

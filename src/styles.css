@@ -22,7 +22,7 @@
   --r: 12px;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 
-  font: 400 15px/1.4 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font: 400 15px/1.4 'Inter Tight Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   color: var(--ink);
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
@@ -2023,7 +2023,7 @@ a.btn {
    Une police d'affichage ronde et joyeuse pour tout ce qui donne le ton. */
 
 :root {
-  --display: 'Bricolage Grotesque Variable', system-ui, sans-serif;
+  --display: 'Inter Tight Variable', system-ui, sans-serif;
 }
 .brand,
 .lens-head h2,
@@ -2049,15 +2049,15 @@ a.btn {
 }
 .pw-title,
 .ob-title {
-  font-weight: 700;
+  font-weight: 500;
   letter-spacing: -0.035em;
 }
 .panel-head h2 {
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.02em;
 }
 .brand {
-  font-weight: 700;
+  font-weight: 600;
 }
 [data-excel='off'] .month-row {
   letter-spacing: 0.06em;
@@ -2264,22 +2264,6 @@ a.btn {
 }
 
 /* barre de la journée : un segment par tâche, coloré par son verdict */
-.lens-bar {
-  display: flex;
-  gap: 3px;
-  height: 5px;
-  margin: -6px 4px 16px;
-}
-.lens-bar .seg {
-  flex: 1;
-  border-radius: 3px;
-  background: var(--dot);
-  transition: background 0.4s var(--ease), transform 0.3s var(--ease);
-}
-.lens-bar .seg.is-white {
-  background: rgba(127, 127, 160, 0.18);
-}
-
 /* le bouton Aujourd'hui appelle quand on s'est éloigné */
 .today-fab {
   transition: transform 0.3s var(--ease), box-shadow 0.3s;
@@ -2332,5 +2316,306 @@ a.btn {
 @media (prefers-reduced-motion: reduce) {
   .fx-layer {
     display: none;
+  }
+}
+
+/* ============================================================= AUBE ===
+   Mode par défaut : le jour ouvert au centre, posé sur le ciel, sans bloc ;
+   les autres jours en lignes au-dessus et en dessous, de plus en plus flous. */
+
+html[data-excel='off'],
+html[data-excel='off'] body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+[data-excel='off'] .shell {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+[data-excel='off'] .chrome {
+  border-bottom: 0;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.month-label {
+  font-size: 14px;
+  color: var(--ink-3);
+  text-transform: capitalize;
+}
+[data-theme='day'][data-excel='off'] {
+  --ink-3: #5d5868;
+  --halo: radial-gradient(ellipse at 50% 50%, rgba(255, 246, 222, 0.9), rgba(255, 236, 214, 0.4) 45%, transparent 72%);
+}
+[data-theme='day'][data-excel='off'] .shell::before {
+  background:
+    radial-gradient(40% 30% at 16% 10%, rgba(255, 255, 255, 0.8), transparent 70%),
+    radial-gradient(35% 25% at 86% 8%, rgba(255, 226, 214, 0.85), transparent 70%),
+    radial-gradient(70% 40% at 30% 108%, rgba(246, 183, 200, 0.65), transparent 70%),
+    radial-gradient(60% 40% at 80% 104%, rgba(249, 211, 160, 0.6), transparent 70%),
+    linear-gradient(180deg, #b4cdee 0%, #f2cdc8 42%, #fbe3c8 72%, #f6efe4 100%);
+}
+
+.stage-main {
+  flex: 1;
+  min-height: 0;
+  padding: 0;
+}
+.stage {
+  height: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto minmax(0, 1fr);
+  touch-action: none;
+}
+.st-above,
+.st-below {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.st-above {
+  justify-content: flex-end;
+  padding-bottom: clamp(16px, 5vh, 48px);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 55%);
+  mask-image: linear-gradient(to bottom, transparent, #000 55%);
+}
+.st-below {
+  justify-content: flex-start;
+  padding-top: clamp(18px, 5.5vh, 52px);
+  -webkit-mask-image: linear-gradient(to top, transparent, #000 55%);
+  mask-image: linear-gradient(to top, transparent, #000 55%);
+}
+.st-line {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 14px;
+  text-align: left;
+  opacity: max(0.3, calc(1 - (var(--d) - 1) * 0.15));
+  filter: blur(max(0px, calc((var(--d) - 1) * 0.5px)));
+  transition: opacity 0.4s var(--ease), filter 0.4s var(--ease), background 0.2s;
+}
+.st-line:hover,
+.st-line:focus-visible {
+  opacity: 1;
+  filter: none;
+  background: rgba(255, 255, 255, 0.4);
+}
+.st-line:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+[data-theme='night'] .st-line:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.st-date {
+  position: relative;
+  flex: none;
+  width: 72px;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+}
+.st-wd {
+  font-size: 13px;
+  color: var(--ink-3);
+}
+.st-num {
+  font-size: 15px;
+  font-weight: 600;
+}
+.st-month {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+}
+.st-line.is-today .st-wd,
+.st-line.is-today .st-num {
+  color: var(--accent-ink);
+}
+.st-line .minis {
+  flex: 1;
+  -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent);
+  mask-image: linear-gradient(90deg, #000 88%, transparent);
+}
+.st-score {
+  flex: none;
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+.st-line.is-locked {
+  filter: blur(3px);
+  opacity: 0.45;
+}
+
+.st-lens.lens {
+  margin: 0;
+  padding: 4px 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  animation: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.st-lens.lens::before {
+  inset: -60px -40px;
+}
+.st-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.st-pill,
+.st-when {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+}
+.st-when {
+  padding: 6px 11px;
+  font-size: 12px;
+}
+.st-when.is-today {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+.st-nav {
+  width: 32px;
+  height: 32px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  color: var(--ink-3);
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  transition: background 0.2s, transform 0.15s var(--ease);
+}
+.st-nav:hover {
+  background: #fff;
+  color: var(--ink);
+}
+.st-nav:active {
+  transform: scale(0.92);
+}
+[data-theme='night'] .st-pill,
+[data-theme='night'] .st-nav,
+[data-theme='night'] .st-when:not(.is-today) {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+[data-theme='night'] .st-nav:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+.st-msg {
+  margin: 18px 0 0;
+  max-width: 760px;
+  font-family: var(--display);
+  font-size: clamp(30px, 4.4vw, 50px);
+  font-weight: 400;
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+.st-gauge {
+  width: min(560px, 100%);
+  margin-top: 24px;
+}
+.st-track {
+  position: relative;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.9),
+    0 10px 30px -14px rgba(60, 40, 80, 0.35);
+}
+[data-theme='night'] .st-track {
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+.st-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ff9a7a, var(--accent) 60%, #ffc15e);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 45%, transparent);
+  transition: width 0.7s var(--ease);
+}
+.st-lens.is-free .st-fill {
+  animation: freeGlow 2.4s ease-in-out infinite;
+}
+@keyframes freeGlow {
+  50% {
+    box-shadow: 0 0 30px color-mix(in srgb, var(--accent) 70%, transparent);
+  }
+}
+.st-legend {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+.st-chips {
+  justify-content: center;
+  max-width: 820px;
+  margin-top: 24px;
+}
+.st-lens .lens-line {
+  margin: 16px 0 0;
+}
+@media (max-width: 639px) {
+  .stage {
+    padding: 0 12px;
+  }
+  .st-line {
+    padding: 0 10px;
+    gap: 10px;
+  }
+  .st-date {
+    width: 58px;
+  }
+  .st-legend {
+    font-size: 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .st-fill,
+  .st-line {
+    transition: none;
+  }
+  .st-lens.is-free .st-fill {
+    animation: none;
   }
 }

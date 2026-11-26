@@ -1,4 +1,4 @@
-import '@fontsource-variable/bricolage-grotesque/opsz.css';
+import '@fontsource-variable/inter-tight/wght.css';
 // Comportements du site : parrainage, apparitions au défilement, barre de navigation.
 
 // Lien d'affilié : ?ref=code (posé par /r/<code>) → gardé 60 jours, lu ensuite par l'app (même domaine)
